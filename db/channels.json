@@ -1,0 +1,7 @@
+{
+    "Exmaple": {
+        "read": true,
+        "write": false,
+        "description": "Simple Example"
+    }
+}
