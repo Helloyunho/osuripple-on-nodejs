@@ -1,42 +1,38 @@
-const slice = require('slice.js')
 const http = require('http')
-const crypto = require('crypto')
-const md5_gen = (x) => {
-    return crypto.createHash('md5').update(x).digest('hex');
-}
 const when = require('./when')
 const express = require('express')
 let app = express()
 const server = http.createServer(app)
-const body_parser = require('body-parser')
+const bodyParser = require('body-parser')
 const compression = require('compression')
 app.use(compression())
 const rawBodySaver = (req, res, buf, encoding) => {
-    if (buf && buf.length) {
-        req.rawBody = buf.toString(encoding || 'utf8');
-    }
+  if (buf && buf.length) {
+    req.rawBody = buf.toString(encoding || 'utf8')
+  }
 }
-  
 
-app.use(body_parser.raw({verify: rawBodySaver, type: () => { return true }}))
+app.use(bodyParser.raw({verify: rawBodySaver, type: () => { return true }}))
 app.set('port', 5001)
 
 server.listen(app.get('port'), () => {
-    console.log('Welcome to osu! server!')
+  console.log('Welcome to osu! server!')
 })
 
 app.route('/')
-.get((req, res) => {
+  .get((req, res) => {
     res.end('Hello, and here is custom bancho server. So... get the fu** off!')
-})
-.post((req, res) => {
+  })
+  .post((req, res) => {
     let reqToken = req.get('osu-token')
-    
+
     let resToken = 'ayy'
     let resData = Buffer.from([])
 
     if (!reqToken) {
-        resToken, resData = when.login(req)
+      let a = when.login(req)
+      resToken = a.resTokenString
+      resData = a.resData
     }
 
     res.setHeader('cho-token', resToken)
@@ -47,4 +43,4 @@ app.route('/')
 
     res.write(resData)
     res.end()
-})
+  })

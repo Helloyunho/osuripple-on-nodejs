@@ -7,12 +7,16 @@
     "body-parser": "^1.18.3",
     "colors": "^1.3.1",
     "compression": "^1.7.3",
+    "dateformat": "^3.0.3",
     "deasync": "^0.1.13",
     "encoding": "^0.1.12",
     "express": "^4.16.3",
+    "md5": "^2.2.1",
+    "numeral": "^2.0.6",
     "osu-parser": "^0.3.3",
     "pixi.js": "^4.8.1",
     "python": "0.0.4",
+    "python-range": "^1.0.4",
     "python-shell": "^0.5.0",
     "python-struct": "^1.0.6",
     "slice": "^1.0.0",
@@ -22,11 +26,20 @@
     "uleb128": "^1.0.1",
     "uuid": "^3.3.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "standard": "^11.0.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Helloyunho <yunho050840@gmail.com>",
   "license": "MIT",
-  "description": ""
+  "description": "",
+  "standard": {
+    "ignore": [
+      "ripple/**",
+      "__javascript__/**",
+      "test/*"
+    ]
+  }
 }
