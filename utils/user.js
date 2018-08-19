@@ -125,7 +125,7 @@ exports.getFriends = (id) => {
 exports.getStatus = (id, mode) => {
   let done = false
   let data = {}
-  db.each('select ranked_score_$mode as rankedScore, accuracy_$mode as accuracy, playcount_$mode as playcount, total_score_$mode as totalScore, pp_$mode as pp game_rank_$mode as game_rank from users_status where id = $id', {$mode: mode, $id: id}, (err, row) => {
+  db.each(`select ranked_score_${mode} as rankedScore, accuracy_${mode} as accuracy, playcount_${mode} as playcount, total_score_${mode} as totalScore, pp_${mode} as pp, game_rank_${mode} as game_rank from user_status where id = ${id}`, (err, row) => {
     if (err) {
       console.error(err)
       done = true
@@ -143,7 +143,7 @@ exports.getStatus = (id, mode) => {
 exports.getGameRank = (id, mode) => {
   let done = false
   let data = null
-  db.each('select game_rank_$mode as game_rank from users_status where id = $id', {$mode: mode, $id: id}, (err, row) => {
+  db.each(`select game_rank_${mode} as game_rank from user_status where id = ${id}`, (err, row) => {
     if (err) {
       console.error(err)
       done = true

@@ -1,5 +1,5 @@
 const consoleColor = require('./consoleColor')
-const share = require('./share')
+const share = require('../share')
 
 module.exports = class {
   constructor (name) {

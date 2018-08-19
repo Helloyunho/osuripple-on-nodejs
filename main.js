@@ -1,5 +1,5 @@
 const http = require('http')
-const when = require('./when')
+const when = require('./when/bancho')
 const express = require('express')
 let app = express()
 const server = http.createServer(app)
@@ -25,6 +25,7 @@ app.route('/')
   })
   .post((req, res) => {
     let reqToken = req.get('osu-token')
+    let reqData = req.body
 
     let resToken = 'ayy'
     let resData = Buffer.from([])

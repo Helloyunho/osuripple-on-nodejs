@@ -85,6 +85,9 @@ module.exports = class {
   getLongitude () {
     return this.location[1]
   }
+  setLocation (lat, long) {
+    this.location = [lat, long]
+  }
 
   // packets
   addpackets (packet) {
@@ -177,7 +180,87 @@ module.exports = class {
   // Match!!
 
   joinMatch (matchID) {
+    if (!(matchID in share.matches.matches)) {
+      return null
+    }
 
+    let match = share.matches.matches[matchID]
+
+    this.stopSpectating()
+
+    if (this.matchID > -1 && this.matchID !== matchID) {
+      this.leaveMatch()
+    }
+
+    let joined = match.userJoin(this)
+    if (!joined) {
+      this.addpackets(packets.matchJoinFail())
+      return null
+    }
+
+    this.matchID = matchID
+    this.joinStream(match.streamName)
+    chat.joinChannel(0, `#multi_${this.matchID}`, this)
+    this.addpackets(packets.matchJoinSuccess(matchID))
+
+    if (match.isTourney) {
+      this.addpackets(packets.notification('You are now in a tournament match.'))
+      match.sendReadyStatus()
+    }
+  }
+
+  leaveMatch () {
+    if (this.matchID === -1) {
+      return null
+    }
+
+    chat.partChannel(0, `#multi_${this.matchID}`, this, true, true)
+    this.leaveStream(`multi/${this.matchID}`)
+    this.leaveStream(`multi/${this.matchID}/playing`)
+
+    let leavingMatchID = this.matchID
+    this.matchID = -1
+
+    if (!(leavingMatchID in share.matches.matches)) {
+      return null
+    }
+
+    let match = share.matches.matches[leavingMatchID]
+
+    match.userLeft(this)
+
+    if (match.isTourney) {
+      match.sendReadyStatus()
+    }
+  }
+
+  // kick to the moon!
+  kick (message = 'You have been kicked from the server. Please login again.', reason = 'kick') {
+    if (message !== '') {
+      this.addpackets(packets.notification(message))
+    }
+    this.addpackets(packets.loginFailed())
+    
+    logoutEvent(this, null, this.irc)
+  }
+
+  setRestricted () {
+    this.restricted = true
+    chat.sendMessage('A Bot', this.username, 'Your account is currently in restricted mode. Please visit Helloyunho\'s website for more information.')
+  }
+
+  resetRestricted () {
+    chat.sendMessage('A Bot', this.username, 'Your account has been unrestricted! Please log in again.')
+  }
+
+  checkRestricted () {
+    let oldRestricted = this.restricted
+    this.restricted = Boolean(this.permission & permission_.restricted)
+    if (this.restricted) {
+      this.setRestricted()
+    } else if (!this.restricted && oldRestricted !== this.restricted) {
+      this.resetRestricted()
+    }
   }
 
   // stream
@@ -270,5 +353,13 @@ module.exports = class {
       this.messages = slice.default(this.messages)['1:']
     }
     this.messages.push(`${dateFormat(new Date(), 'HH:MM')} - ${this.username}@${chan}: ${slice.default(msg)[':50']}`)
+  }
+
+  getMessagesBufferString () {
+    let a = ''
+    this.messages.forEach(x => {
+      a += x.join('\n')
+    })
+    return a
   }
 }

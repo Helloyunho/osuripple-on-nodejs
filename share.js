@@ -1,12 +1,14 @@
 const fs = require('fs')
+const redis = require('redis')
 
-module.exports.tokens = require('./utils/tokens')
+module.exports.tokens = new (require('./utils/tokens'))()
 module.exports.online_users = 0
-module.exports.streams = require('./utils/streams')
-module.exports.channels = require('./utils/channels')
-module.exports.irc = null
-module.exports.log_file = fs.createWriteStream('log.json')
-module.exports.matches = require('./utils/matches')
+module.exports.streams = new (require('./utils/streams'))()
+module.exports.channels = new (require('./utils/channels'))()
+module.exports.irc = new (require('./utils/irc'))()
+module.exports.log_file = fs.createWriteStream('log.log')
+module.exports.matches = new (require('./utils/matches'))()
+module.exports.redis = redis.createClient()
 
 process.on('exit', () => {
   module.exports.log_file.end()

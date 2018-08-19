@@ -270,7 +270,8 @@ module.exports = class {
 
     let total = 0
     let skipped = 0
-    range(0, 16).forEach(i => {
+
+    range(0, 16).forEach((i) => {
       if (this.slots[i].status === matchtypes.Statuses.PLAYING) {
         total++
         if (this.slots[i].skip) {
@@ -289,12 +290,15 @@ module.exports = class {
   }
 
   getUserSlotID (id) {
-    range(0, 16).forEach(x => {
+    let data = null
+
+    range(0, 16).forEach((x) => {
       if (this.slots[x].user && this.slots[x].user in share.tokens.tokens && share.tokens.tokens[this.slots[x].user].userid === id) {
-        return x
+        data = x
       }
     })
-    return null
+
+    return data
   }
 
   updateScore (id, score) {
@@ -314,7 +318,8 @@ module.exports = class {
 
     let total = 0
     let complete = 0
-    range(0, 16).forEach(i => {
+
+    range(0, 16).forEach((i, index) => {
       if (this.slots[i].status === matchtypes.Statuses.PLAYING) {
         total++
         if (this.slots[i].complete) {
@@ -337,5 +342,346 @@ module.exports = class {
       game_mode: this.gameMode,
       scores: {}
     }
+    range(0, 16).forEach(i => {
+      if (this.slots[i].user && this.slots[i].status === matchtypes.Statuses.PLAYING) {
+        infoToSend.scores[share.tokens.tokens[this.slots[i].user].userID] = {
+          scores: this.slots[i].score,
+          mods: this.slots[i].mods,
+          failed: this.slots[i].failed,
+          pass: this.slots[i].passed,
+          team: this.slots[i].team
+        }
+      }
+    })
+
+    this.inProgress = false
+
+    this.resetSlots()
+
+    this.sendUpdates()
+
+    share.streams.broadcast(this.streamName, packets.matchCompete())
+
+    share.streams.dispose(this.playingStreamName)
+    share.streams.remove(this.playingStreamName)
+
+    let chanName = `#multi_${this.matchID}`
+    if (this.isTourney && (chanName in share.channels.channels)) {
+      chat.sendMessage('A Bot', chanName, 'Match has just finished.')
+    }
+  }
+
+  resetSlots () {
+    range(0, 16).forEach(i => {
+      if (this.slots[i].user && this.slots[i].status === matchtypes.Statuses.PLAYING) {
+        this.slots[i].status = matchtypes.Statuses.NOT_READY
+        this.slots[i].loaded = false
+        this.slots[i].skip = false
+        this.slots[i].complete = false
+        this.slots[i].score = 0
+        this.slots[i].failed = false
+        this.slots[i].passed = true
+      }
+    })
+  }
+
+  userJoin (user) {
+    let rangeList = range(0, 16)
+    let data = null
+
+    rangeList.forEach(i => {
+      if (this.slots[i].user === user.token) {
+        this.setSlot(i, matchtypes.Statuses.FREE, 0, null, 0)
+      }
+    })
+
+    rangeList.forEach((i) => {
+      if (this.slots[i].status === matchtypes.Statuses.FREE) {
+        let team = matchtypes.Teams.NO_TEAM
+        if (this.matchTeamType === matchtypes.TeamTypes.TEAM_VS || this.matchTeamType === matchtypes.TeamTypes.TAG_TEAM_VS) {
+          team = (i % 2 === 0) ? matchtypes.Teams.RED : matchtypes.Teams.BLUE
+        }
+        this.setSlot(i, matchtypes.Statuses.NOT_READY, team, user.token, 0)
+
+        this.sendUpdates()
+
+        data = true
+      }
+    })
+
+    return data
+  }
+
+  userLeft (user, disposeMatch = true) {
+    let slotid = this.getUserSlotID(user.userid)
+    if (!slotid) {
+      return null
+    }
+
+    this.setSlot(slotid, matchtypes.Statuses.FREE, 0, null, 0)
+
+    if (this.coundUsers() === 0 && disposeMatch && !this.isTourney) {
+      share.matches.disposeMatch(this.matchID)
+      return null
+    }
+
+    if (user.userid === this.hostUserID) {
+      range(0, 16).some(i => {
+        if (this.slots[i].user && this.slots[i].user in share.tokens.tokens) {
+          this.setHost(share.tokens.tokens[this.slots[i].user].userid)
+        }
+        return this.slots[i].user && this.slots[i].user in share.tokens.tokens
+      })
+    }
+
+    this.sendUpdates()
+  }
+
+  userChangeSlot (userid, newSlotID) {
+    if (this.isLocked || this.isStarting) {
+      return false
+    }
+
+    let oldSlotID = this.getUserSlotID(userid)
+    if (!oldSlotID) {
+      return false
+    }
+
+    if (this.slots[newSlotID].user || this.slots[newSlotID].status !== matchtypes.Statuses.FREE) {
+      return false
+    }
+
+    let oldData = Object.assign({}, this.slots[oldSlotID])
+
+    this.setSlot(oldSlotID, matchtypes.Statuses.FREE, 0, null, 0, false, false, false)
+
+    this.setSlot(newSlotID, oldData.status, oldData.team, oldData.user, oldData.mods)
+
+    this.sendUpdates()
+
+    return true
+  }
+
+  changePassword (newPassword) {
+    this.matchPassword = newPassword
+
+    share.streams.broadcast(this.streamName, packets.changeMatchPassword(this.matchPassword))
+
+    this.sendUpdates()
+  }
+
+  changeMods (mods) {
+    this.mods = mods
+    this.sendUpdates()
+  }
+
+  userHasBeatmap (userid, has = true) {
+    let slotID = this.getUserSlotID(userid)
+    if (!slotID) {
+      return null
+    }
+
+    this.setSlot(slotID, (!has) ? matchtypes.Statuses.NO_MAP : matchtypes.Statuses.NOT_READY)
+
+    this.sendUpdates()
+  }
+
+  transferHost (slotid) {
+    if (!this.slots[slotid].user || !(this.slots[slotid].user in share.tokens.tokens)) {
+      return null
+    }
+
+    this.setHost(share.tokens.tokens[this.slots[slotid].user].userid)
+  }
+
+  playerFailed (userid) {
+    let slotID = this.getUserSlotID(userid)
+    if (!slotID) {
+      return null
+    }
+
+    this.slots[slotID].passed = false
+
+    share.streams.broadcast(this.playingStreamName, packets.playerFailed(slotID))
+  }
+
+  invite (fro, to) {
+    let froToken = share.tokens.getTokenFromUserid(fro)
+    let toToken = share.tokens.getTokenFromUserid(to)
+    if (!froToken || !toToken) {
+      return null
+    }
+
+    if (to === 1) {
+      chat.sendMessage('A Bot', froToken.username, 'I\'m a bot! So I can\'t play anything!')
+    }
+
+    let message = `Play with me!! "[osump://${this.matchID}/${this.matchPassword.replace(' ', '_')} ${this.matchName}]"`
+    chat.sendMessage('', toToken.username, message, froToken)
+  }
+
+  countUsers () {
+    let c = 0
+    range(0, 16).forEach(i => {
+      if (this.slots[i].user) {
+        c++
+      }
+    })
+    return c
+  }
+
+  changeTeam (userid, newTeam = null) {
+    if (this.matchTeamType !== matchtypes.TeamTypes.TEAM_VS && this.matchTeamType !== matchtypes.TeamTypes.TAG_TEAM_VS) {
+      return null
+    }
+
+    if (this.isLocked || this.isStarting) {
+      return null
+    }
+
+    let slotID = this.getUserSlotID(userid)
+    if (!slotID) {
+      return null
+    }
+
+    if (!newTeam) {
+      newTeam = (this.slots[slotID].team === matchtypes.Teams.RED) ? matchtypes.Teams.BLUE : matchtypes.Teams.RED
+    }
+    this.setSlot(slotID, null, newTeam)
+    this.sendUpdates()
+  }
+
+  checkTeams () {
+    if (this.matchTeamType !== matchtypes.TeamTypes.TEAM_VS && this.matchTeamType !== matchtypes.TeamTypes.TAG_TEAM_VS) {
+      return true
+    }
+
+    let firstTeam = -1
+    let data = false
+    range(0, 16).forEach(i => {
+      if (this.slots[i].user && (this.slots[i].status & matchtypes.Statuses.NO_MAP) === 0) {
+        if (firstTeam === -1) {
+          firstTeam = this.slots[i].team
+        } else if (firstTeam !== this.slots[i].team) {
+          data = true
+        }
+      }
+    })
+
+    return data
+  }
+
+  start () {
+    this.isStarting = false
+
+    if (this.countUsers() < 2 || !this.checkTeams()) {
+      return false
+    }
+
+    share.streams.add(this.playingStreamName)
+
+    this.inProgress = true
+
+    range(0, 16).forEach(i => {
+      if (this.slots[i].user in share.tokens.tokens) {
+        this.slots[i].status = matchtypes.Statuses.PLAYING
+        this.slots[i].loaded = false
+        this.slots[i].skip = false
+        this.slots[i].complete = false
+        share.tokens.tokens[this.slots[i].user].joinStream(this.playingStreamName)
+      }
+    })
+
+    share.streams.broadcast(this.playingStreamName, packets.matchStart(this.matchID))
+
+    this.sendUpdates()
+    return true
+  }
+
+  forceSize (matchSize) {
+    range(0, matchSize).forEach(i => {
+      if (this.slots[i].status === matchtypes.Statuses.LOCKED) {
+        this.toggleSlotLocked(i)
+      }
+    })
+    range(matchSize, 16).forEach(i => {
+      if (this.slots[i].status !== matchtypes.Statuses.LOCKED) {
+        this.toggleSlotLocked(i)
+      }
+    })
+  }
+
+  abort () {
+    if (!this.inProgress) {
+      return null
+    }
+    this.inProgress = false
+    this.isStarting = false
+    this.resetSlots()
+    this.sendUpdates()
+    share.streams.broadcast(this.playingStreamName, packets.matchAbort())
+    share.streams.dispose(this.playingStreamName)
+    share.streams.remove(this.playingStreamName)
+  }
+
+  initializeTeams () {
+    if (this.matchTeamType === matchtypes.TeamTypes.TEAM_VS || this.matchTeamType === matchtypes.TeamTypes.TAG_TEAM_VS) {
+      this.slots.forEach((i, index) => {
+        i.team = (index % 2 === 0) ? matchtypes.Teams.RED : matchtypes.Teams.BLUE
+      })
+    } else {
+      this.slots.forEach(i => {
+        i.team = matchtypes.Teams.NO_TEAM
+      })
+    }
+  }
+
+  resetMods () {
+    this.slots.forEach(i => {
+      i.mods = 0
+    })
+  }
+
+  resetReady () {
+    this.slots.forEach(i => {
+      if (i.status === matchtypes.Statuses.READY) {
+        i.status = matchtypes.Statuses.NOT_READY
+      }
+    })
+  }
+
+  sendReadyStatus () {
+    let chanName = `#multi_${this.matchID}`
+
+    if (!(chanName in share.channels.channels)) {
+      return null
+    }
+
+    let totalUsers = 0
+    let readyUsers = 0
+
+    this.slots.forEach(i => {
+      if (!i.user) {
+        return
+      }
+
+      totalUsers++
+
+      if (i.status === matchtypes.Statuses.READY) {
+        readyUsers++
+      }
+    })
+
+    let message = `${readyUsers} users ready out of ${totalUsers}.`
+
+    if (totalUsers === readyUsers) {
+      message += ' All users ready!'
+    }
+
+    if (totalUsers === 0) {
+      message = 'The match is now empty.'
+    }
+
+    chat.sendMessage('A Bot', chanName, message)
   }
 }

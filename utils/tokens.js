@@ -1,5 +1,8 @@
 const Token = require('./token')
 let share = require('../share')
+const logoutEvent = require('../when/bancho/logout')
+const packets = require('./packets')
+const CronJob = require('cron').CronJob
 
 module.exports = class {
   constructor () {
@@ -74,7 +77,68 @@ module.exports = class {
     })
 
     del.forEach(x => {
-
+      logoutEvent(x)
     })
+  }
+
+  multipleEnqueue (packet, who, but = false) {
+    Object.values(this.tokens).forEach(x => {
+      let shouldEnqueue = false
+      if (x.userid in who && !but) {
+        shouldEnqueue = true
+      } else if (!(x.userid in who) && but) {
+        shouldEnqueue = true
+      }
+
+      if (shouldEnqueue) {
+        x.addpackets(packet)
+      }
+    })
+  }
+
+  enqueueAll (packet) {
+    Object.values(this.tokens).forEach(x => {
+      x.addpackets(packet)
+    })
+  }
+
+  usersTimeoutCheckLoop () {
+    let timedOutTokens = []
+    let timeoutLimit = Date.now() - 100
+    Object.keys(this.tokens).forEach(x => {
+      if (this.tokens[x].pingTime < timeoutLimit && this.tokens[x].userid !== 1 && !this.tokens[x].irc && !this.tokens[x].tournament) {
+        timedOutTokens.push(x)
+      }
+    })
+
+    timedOutTokens.forEach(i => {
+      this.tokens[i].addpackets(packets.notification('Your connection to the server timed out.'))
+      logoutEvent(this.tokens[i], null)
+    })
+    timedOutTokens = []
+
+    let timer = new CronJob('100 * * * * *', this.usersTimeoutCheckLoop)
+    timer.start()
+  }
+
+  spamProtectionResetLoop () {
+    Object.values(this.tokens).forEach(x => {
+      x.spamRate = 0
+    })
+
+    let timer = new CronJob('10 * * * * *', this.spamProtectionResetLoop)
+    timer.start()
+  }
+
+  deleteBanchoSessions () {
+    share.redis.eval('return redis.call(\'del\', unpack(redis.call(\'keys\', ARGV[1])))', 0, 'bancho:sessions:*')
+  }
+
+  tokenExists (username = '', userID = -1) {
+    if (userID > -1) {
+      return (this.getTokenFromUserid(userID)) ? true : false
+    } else {
+      return (this.getTokenFromUsername(username)) ? true : false
+    }
   }
 }

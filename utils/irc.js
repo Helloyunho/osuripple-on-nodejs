@@ -4,8 +4,7 @@ const net = require('net')
 const numeral = require('numeral')
 const consoleColor = require('./consoleColor')
 const encoding = require('encoding')
-const { StringDecoder } = require('string_decoder')
-const decoder = new StringDecoder('latin_1')
+const decoder = require('legacy-encoding').decode
 const slice = require('slice.js')
 const md5 = require('md5')
 const sqlite3 = require('sqlite3').verbose()
@@ -110,7 +109,7 @@ class Client {
     }
 
     if (data) {
-      this.__readbuffer += decoder.write(data)
+      this.__readbuffer += decoder(data, 'latin1')
       this.parseBuffer()
       this.__timestamp = Date.now()
       this.__sentPing = false
@@ -562,8 +561,6 @@ module.exports = class {
     })
   }
 }
-
-share.irc = new module.exports()
 
 process.on('exit', () => {
   db.close((err) => {

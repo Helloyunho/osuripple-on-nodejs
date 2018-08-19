@@ -7,11 +7,12 @@ module.exports = {
   packets: require('./packets'),
   token: require('./token'),
   tokens: require('./tokens'),
-  user_status: require('./user_status'),
+  user_status: require('./userStatus'),
   gamemodes: require('./gamemodes'),
   stream: require('./stream'),
   streams: require('./streams'),
   chat: require('./chat'),
   channel: require('./channel'),
-  channels: require('./channels')
+  channels: require('./channels'),
+  location: require('./location')
 }
