@@ -1,9 +1,3 @@
-const packetid = require('./packetid')
-const datatypes = require('../types').datatypes
-const packet = require('./packet')
-const userutil = require('./user')
-const share = require('../share')
-const permission = require('../permission')
 const slice = require('slice.js')
 
 // login errors
@@ -303,3 +297,10 @@ module.exports.switchServer = (address) => {
 module.exports.notification = (x) => {
   return packet.buildPacket(packetid.server_notification, [[x, datatypes.string]])
 }
+
+const packetid = require('./packetid')
+const datatypes = require('../types').datatypes
+const packet = require('./packet')
+const userutil = require('./user')
+const share = require('../share')
+const permission = require('../permission')

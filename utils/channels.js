@@ -1,7 +1,4 @@
-const share = require('../share')
-const channel = require('./channel')
 const fs = require('fs')
-const chat = require('./chat')
 
 module.exports = class {
   constructor () {
@@ -60,3 +57,7 @@ module.exports = class {
     delete this.channels[name]
   }
 }
+
+const share = require('../share')
+const channel = require('./channel')
+const chat = require('./chat')
