@@ -6,32 +6,6 @@ const uleb128 = require('uleb128')
 
 const encoding = require('encoding')
 
-const deasync = require('deasync')
-
-// By https://stackoverflow.com/a/8273091/9376340
-function range (start, stop, step) {
-  if (typeof stop === 'undefined') {
-    // one param defined
-    stop = start
-    start = 0
-  }
-
-  if (typeof step === 'undefined') {
-    step = 1
-  }
-
-  if ((step > 0 && start >= stop) || (step < 0 && start <= stop)) {
-    return []
-  }
-
-  var result = []
-  for (var i = start; step > 0 ? i < stop : i > stop; i += step) {
-    result.push(i)
-  }
-
-  return result
-}
-
 // here is the begin of code by ripple
 const buildPacket = (x, y = []) => {
   let pacData = Buffer.from([])
@@ -81,9 +55,7 @@ const packData = (x, y) => {
       if (x.length === 0) {
         result = Buffer.concat([result, Buffer.from('\x00')])
       } else {
-        // IDK Why but error keep's going on this thing so I maked this to another var
-        let encoded = uleb128.encode(x.length)
-        result = Buffer.concat([result, Buffer.from('\x0B'), Buffer.from(encoded), encoding.convert(x, 'Latin_1')])
+        result = Buffer.concat([result, Buffer.from('\x0B'), uleb128.encode(x.length), encoding.convert(x, 'Latin_1')])
       }
       break
     case types.datatypes.ffloat:
@@ -137,82 +109,7 @@ const unpackData = (x, y) => {
   return struct.unpack(unpackType, Buffer.from(x))[0]
 }
 
-const readPacketID = stream => {
-  return unpackData(stream.slice(0, 2), types.datatypes.uInt16)
-}
-
-const readPacketLength = stream => {
-  return unpackData(stream.slice(3, 7), types.datatypes.uInt32)
-}
-
-const readPacketData = (stream, structure = null, hasFirstBytes = true) => {
-  if (!structure) {
-    structure = []
-  }
-
-  let data = {}
-
-  let start, end
-  if (hasFirstBytes) {
-    end = 7
-    start = 7
-  } else {
-    end = 0
-    start = 0
-  }
-
-  structure.forEach(i => {
-    start = end
-    let unpack = true
-    if (i[1] === types.datatypes.int_list) {
-      unpack = false
-
-      let length = unpackData(stream.slice(start, start + 2), types.datatypes.uInt16)
-
-      data[i[0]] = []
-      range(0, length).forEach(j => {
-        data[i[0]].push(unpackData(stream.slice(start + 2 + (4 * j), start + 2 + (4 * (j + 1))), types.datatypes.sInt32))
-      })
-
-      end = start + 2 + (4 * length)
-    } else if (i[1] === types.datatypes.string) {
-      unpack = false
-
-      if (stream[start] === 0) {
-        data[i[0]] = ''
-        end = start + 1
-      } else {
-        let length = uleb128.decode(stream.slice(start + 1))
-        end = start + length.value + length.length + 1
-
-        data[i[0]] = ''
-        let adsfasdf = stream.slice(start + 1 + length[1], end)
-        for (const j of adsfasdf.keys()) {
-          data[i[0]] += String.fromCharCode(j)
-        }
-      }
-    } else if (i[1] === types.datatypes.byte) {
-      end = start + 1
-    } else if (i[1] === types.datatypes.uInt16 || i[1] === types.datatypes.sInt16) {
-      end = start + 2
-    } else if (i[1] === types.datatypes.uInt32 || i[1] === types.datatypes.sInt32) {
-      end = start + 4
-    } else if (i[1] === types.datatypes.uInt64 || i[1] === types.datatypes.sInt64) {
-      end = start + 8
-    }
-
-    if (unpack) {
-      data[i[0]] = unpackData(stream.slice(start, end), i[1])
-    }
-  })
-
-  return data
-}
-
 module.exports = {
   packData: packData,
   buildPacket: buildPacket,
-  unpackData: unpackData,
-  readPacketID: readPacketID,
-  readPacketLength: readPacketLength,
-  readPacketData: readPacketData}
+  unpackData: unpackData}

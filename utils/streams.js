@@ -1,3 +1,6 @@
+const stream = require('./stream')
+const share = require('../share')
+
 module.exports = class {
   constructor () {
     this.streams = {}
@@ -55,6 +58,3 @@ module.exports = class {
     return null
   }
 }
-
-const stream = require('./stream')
-const share = require('../share')
