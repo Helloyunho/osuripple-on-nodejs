@@ -262,7 +262,12 @@ module.exports.getCountry = ip => {
       result = 'XX'
       done = true
     }
-    result = JSON.parse(body)['country']
+		let a = JSON.parse(body)
+		if (!a['country']) {
+			result = 'XX'
+		} else {
+			result = a['country']
+		}
     done = true
   })
 
@@ -270,7 +275,8 @@ module.exports.getCountry = ip => {
     return !done
   })
 
-  return result.upper
+
+	return result.toUpperCase()
 }
 
 module.exports.getLocation = ip => {

@@ -1,14 +1,6 @@
-const userutil = require('./user')
-const permission_ = require('../permission')
-const userStatus = require('./userStatus')
-const gamemodes = require('./gamemodes')
-const consoleColor = require('./consoleColor')
 const uuidv4 = require('uuid/v4')
-const share = require('../share')
-const packets = require('./packets')
 const slice = require('slice.js')
 const dateFormat = require('dateformat')
-const chat = require('./chat')
 
 module.exports = class {
   constructor (id, token_ = null, ip = '', irc = false, timeoffset = 0, tournament = false) {
@@ -65,7 +57,6 @@ module.exports = class {
 
   updateStatus () {
     let status = userutil.getStatus(this.userid, this.gameMode)
-    consoleColor.log(status)
     if (!status) {
       consoleColor.warn('Status is undifined!')
       return
@@ -240,7 +231,7 @@ module.exports = class {
       this.addpackets(packets.notification(message))
     }
     this.addpackets(packets.loginFailed())
-    
+
     logoutEvent(this, null, this.irc)
   }
 
@@ -363,3 +354,13 @@ module.exports = class {
     return a
   }
 }
+
+const userutil = require('./user')
+const permission_ = require('../permission')
+const userStatus = require('./userStatus')
+const gamemodes = require('./gamemodes')
+const consoleColor = require('./consoleColor')
+const share = require('../share')
+const packets = require('./packets')
+const chat = require('./chat')
+const logoutEvent = require('../when/bancho/logout')

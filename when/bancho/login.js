@@ -1,13 +1,10 @@
-const utils = require('../../utils')
 const slice = require('slice.js')
-const permission = require('../../permission')
-const share = require('../../share')
 
 module.exports = (req) => {
   let resTokenString = 'ayy'
   let resData = Buffer.from([])
 
-  let reqIP = req.ip
+  let reqIP = req.get('X-Real-IP')
 
   // Login Part
   let loginInfo = req.body.toString('utf8').split('\n')
@@ -27,20 +24,20 @@ module.exports = (req) => {
 
   let userID = utils.user.getIdFromUsername(username)
   if (!userID) {
-    utils.console_color.error('Error: wrong password or username')
+    utils.consoleColor.error('Error: wrong password or username')
     resData = Buffer.concat([resData, utils.packets.loginFailed()])
     return returnObject(resTokenString, resData)
   }
   let userPasswordCorrect = utils.user.checkLoginIsOk(userID, loginInfo[1])
   if (!userPasswordCorrect) {
-    utils.console_color.error('Error: wrong password or username')
+    utils.consoleColor.error('Error: wrong password or username')
     resData = Buffer.concat([resData, utils.packets.loginFailed()])
     return returnObject(resTokenString, resData)
   }
 
   let userPer = utils.user.getPermission(userID)
   if (userPer & permission.banned) {
-    utils.console_color.error(`Error: ${username} is banned.`)
+    utils.consoleColor.error(`Error: ${username} is banned.`)
     resData = Buffer.concat([resData, utils.packets.Banned()])
     return returnObject(resTokenString, resData)
   }
@@ -103,6 +100,10 @@ module.exports = (req) => {
   resToken.setLocation(lat, long)
   resToken.country = country
 
+  if (utils.user.getCountry(userID) === 'XX') {
+    utils.user.setCountry(userID, countryLetters)
+  }
+
   if (!resToken.restricted) {
     share.streams.broadcast('main', utils.packets.userPanel(userID))
   }
@@ -114,3 +115,7 @@ module.exports = (req) => {
 const returnObject = (a, b) => {
   return {resTokenString: a, resData: b}
 }
+
+const utils = require('../../utils')
+const permission = require('../../permission')
+const share = require('../../share')

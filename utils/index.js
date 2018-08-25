@@ -14,5 +14,6 @@ module.exports = {
   chat: require('./chat'),
   channel: require('./channel'),
   channels: require('./channels'),
-  location: require('./location')
+  location: require('./location'),
+  clientPackets: require('./clientpackets')
 }
