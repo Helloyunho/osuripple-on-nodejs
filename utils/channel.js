@@ -1,5 +1,3 @@
-const share = require('../share')
-
 module.exports = class {
   constructor (name, description, Read, Write, temp, hidden) {
     this.name = name
@@ -24,3 +22,5 @@ module.exports = class {
     }
   }
 }
+
+const share = require('../share')

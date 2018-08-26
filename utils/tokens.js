@@ -1,7 +1,3 @@
-const Token = require('./token')
-let share = require('../share')
-const logoutEvent = require('../when/bancho/logout')
-const packets = require('./packets')
 const CronJob = require('cron').CronJob
 
 module.exports = class {
@@ -142,3 +138,8 @@ module.exports = class {
     }
   }
 }
+
+const Token = require('./token')
+const logoutEvent = require('../when/bancho').logout
+let share = require('../share')
+const packets = require('./packets')
