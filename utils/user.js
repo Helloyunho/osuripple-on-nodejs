@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3').verbose()
 
 const deasync = require('deasync')
+const share = require('../share')
 
 let db = new sqlite3.Database('./db/osu.db', (err) => {
   if (err) {
@@ -187,33 +188,6 @@ exports.getSilenceEnd = (id) => {
   return data
 }
 
-exports.updateLatestActivity = id => {
-  db.run('update users set latest_activity = ? where id = ?', [Date.now(), id])
-}
-
-exports.setCountry = (id, country) => {
-  db.run('update user_status set country = ? where id = ?', [country, id])
-}
-
-exports.getCountry = (id) => {
-  let done = false
-  let data = null
-  db.each('select country from user_status where id = ?', [id], (err, row) => {
-    if (err) {
-      console.error(err)
-      done = true
-      return
-    }
-    data = row.country
-    done = true
-  })
-  deasync.loopWhile(() => {
-    return !done
-  })
-
-  return data
-}
-
 process.on('exit', () => {
   db.close((err) => {
     if (err) {
@@ -221,5 +195,3 @@ process.on('exit', () => {
     }
   })
 })
-
-const share = require('../share')

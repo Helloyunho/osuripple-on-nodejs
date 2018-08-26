@@ -1,10 +1,15 @@
+const share = require('../share')
+const chat = require('./chat')
 const net = require('net')
 const numeral = require('numeral')
+const consoleColor = require('./consoleColor')
 const encoding = require('encoding')
 const decoder = require('legacy-encoding').decode
 const slice = require('slice.js')
 const md5 = require('md5')
 const sqlite3 = require('sqlite3').verbose()
+const userutil = require('./user')
+const permission = require('../permission')
 
 let db = new sqlite3.Database('./db/osu.db', (err) => {
   if (err) {
@@ -564,9 +569,3 @@ process.on('exit', () => {
     }
   })
 })
-
-const share = require('../share')
-const chat = require('./chat')
-const consoleColor = require('./consoleColor')
-const userutil = require('./user')
-const permission = require('../permission')

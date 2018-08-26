@@ -1,3 +1,7 @@
+const userutil = require('./user')
+const share = require('../share')
+const packets = require('./packets')
+const consoleColor = require('./consoleColor')
 const slice = require('slice.js')
 const encoding = require('encoding')
 const { StringDecoder } = require('string_decoder')
@@ -252,8 +256,3 @@ module.exports.UsernameForBancho = (user) => {
 module.exports.UsernameForIRC = (user) => {
   return user.replace(/ /g, '_')
 }
-
-const userutil = require('./user')
-const share = require('../share')
-const packets = require('./packets')
-const consoleColor = require('./consoleColor')

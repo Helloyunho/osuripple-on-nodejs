@@ -1,3 +1,6 @@
+const consoleColor = require('./consoleColor')
+const share = require('../share')
+
 module.exports = class {
   constructor (name) {
     this.name = name
@@ -50,6 +53,3 @@ module.exports = class {
     })
   }
 }
-
-const consoleColor = require('./consoleColor')
-const share = require('../share')

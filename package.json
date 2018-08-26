@@ -21,7 +21,6 @@
     "python-range": "^1.0.4",
     "python-shell": "^0.5.0",
     "python-struct": "^1.0.6",
-    "query-string": "^6.1.0",
     "redis": "^2.8.0",
     "request": "^2.88.0",
     "slice": "^1.0.0",
@@ -35,8 +34,7 @@
     "standard": "^11.0.1"
   },
   "scripts": {
-    "start_bancho": "node bancho.js",
-    "start_web_emu": "node site_emu.js"
+    "start": "node main.js"
   },
   "author": "Helloyunho <yunho050840@gmail.com>",
   "license": "MIT",

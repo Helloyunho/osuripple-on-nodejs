@@ -1,3 +1,6 @@
+const share = require('../share')
+const packets = require('./packets')
+const match = require('./match')
 const CronJob = require('cron').CronJob
 
 module.exports = class {
@@ -67,7 +70,3 @@ module.exports = class {
     timer.start()
   }
 }
-
-const share = require('../share')
-const packets = require('./packets')
-const match = require('./match')

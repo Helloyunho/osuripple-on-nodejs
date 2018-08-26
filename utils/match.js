@@ -1,3 +1,10 @@
+const chat = require('./chat')
+const share = require('../share')
+const packets = require('./packets')
+const datatypes = require('../types').datatypes
+const matchtypes = require('./matchType')
+const consoleColor = require('./consoleColor')
+
 // By https://stackoverflow.com/a/8273091/9376340
 function range (start, stop, step) {
   if (typeof stop === 'undefined') {
@@ -678,10 +685,3 @@ module.exports = class {
     chat.sendMessage('A Bot', chanName, message)
   }
 }
-
-const chat = require('./chat')
-const share = require('../share')
-const packets = require('./packets')
-const datatypes = require('../types').datatypes
-const matchtypes = require('./matchType')
-const consoleColor = require('./consoleColor')

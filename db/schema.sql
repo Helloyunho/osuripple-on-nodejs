@@ -14,8 +14,7 @@ CREATE TABLE "users" (
 	`permission`	INTEGER DEFAULT 0,
 	`username_easy`	INTEGER,
 	`silence_time`	INTEGER NOT NULL DEFAULT 0,
-	`silence_reason`	INTEGER,
-	`latest_activity`	INTEGER
+	`silence_reason`	INTEGER
 );
 CREATE TABLE "user_status" (
 	`id`	INTEGER NOT NULL,
@@ -43,6 +42,6 @@ CREATE TABLE "user_status" (
 	`game_rank_1`	integer DEFAULT 0,
 	`game_rank_2`	integer DEFAULT 0,
 	`game_rank_3`	integer DEFAULT 0,
-	`country`	TEXT DEFAULT 'XX',
+	`country`	TEXT NOT NULL DEFAULT 'XX',
 	PRIMARY KEY(`id`)
 );

@@ -1,3 +1,8 @@
+const utils = require('../../utils')
+const slice = require('slice.js')
+const share = require('../../share')
+const permission = require('../../permission')
+
 module.exports = (userToken, _ = null, deleteToken = true) => {
   let userID = userToken.userid
   let username = userToken.username
@@ -29,6 +34,3 @@ module.exports = (userToken, _ = null, deleteToken = true) => {
     // TODO: Make change username
   }
 }
-
-const utils = require('../../utils')
-const share = require('../../share')
