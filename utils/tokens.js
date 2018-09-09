@@ -19,6 +19,7 @@ module.exports = class {
   }
   getTokenFromUserid (id, ignoreIRC = false, _all = false) {
     let all = []
+    let data
 
     Object.values(this.tokens).forEach(x => {
       if (x.userid === id) {
@@ -28,13 +29,16 @@ module.exports = class {
         if (_all) {
           all.push(x)
         } else {
-          return x
+          data = x
+          return undefined
         }
       }
     })
 
     if (_all) {
       return all
+    } else if (data) {
+      return data
     } else {
       return null
     }

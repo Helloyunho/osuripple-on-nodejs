@@ -120,7 +120,6 @@ module.exports.userStatus = (id, force = false) => {
   if (!userToken || ((userToken.restricted || userToken.irc || userToken.tournament) && !force)) {
     return Buffer.from([])
   }
-  let pp = (userToken.pp <= 65535 > 0) ? userToken.pp : 0
 
   return packet.buildPacket(packetid.server_userStats, [
     [id, datatypes.uInt32],
@@ -129,13 +128,13 @@ module.exports.userStatus = (id, force = false) => {
     [userToken.actionMd5, datatypes.string],
     [userToken.actionMods, datatypes.sInt32],
     [userToken.gameMode, datatypes.byte],
-    [userToken.beatmapID, datatypes.sint32],
+    [userToken.beatmapID, datatypes.sInt32],
     [userToken.rankedScore, datatypes.uInt64],
     [userToken.accuracy, datatypes.ffloat],
     [userToken.playcount, datatypes.uInt32],
     [userToken.totalScore, datatypes.uInt64],
     [userToken.gameRank, datatypes.uInt32],
-    [pp, datatypes.uInt16]
+    [(userToken.pp <= 65535 > 0) ? userToken.pp : 0, datatypes.uInt16]
   ])
 }
 

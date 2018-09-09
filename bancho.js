@@ -16,6 +16,7 @@ app.set('port', 5001)
 
 server.listen(app.get('port'), () => {
   console.log('Welcome to osu! server!')
+  utils.abot.connect()
 })
 
 app.route('/')

@@ -15,5 +15,6 @@ module.exports = {
   channel: require('./channel'),
   channels: require('./channels'),
   location: require('./location'),
-  clientPackets: require('./clientpackets')
+  clientPackets: require('./clientpackets'),
+  abot: require('./abot')
 }
