@@ -1,4 +1,5 @@
-CREATE TABLE "friends" (
+BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS "friends" (
 	`userid`	INTEGER,
 	`friendid`	INTEGER
 );
@@ -7,7 +8,7 @@ CREATE TABLE `irc_tokens` (
 	`token`	TEXT,
 	PRIMARY KEY(`id`)
 );
-CREATE TABLE "users" (
+CREATE TABLE IF NOT EXISTS "users" (
 	`id`	INTEGER NOT NULL DEFAULT 0 PRIMARY KEY AUTOINCREMENT,
 	`username`	TEXT NOT NULL,
 	`password`	TEXT NOT NULL,
@@ -17,7 +18,8 @@ CREATE TABLE "users" (
 	`silence_reason`	INTEGER,
 	`latest_activity`	INTEGER
 );
-CREATE TABLE "user_status" (
+INSERT INTO users VALUES(1,'asdf bot','asdfasdfsdf',0,'asdf_bot',0,NULL,NULL);
+CREATE TABLE IF NOT EXISTS "user_status" (
 	`id`	INTEGER NOT NULL,
 	`ranked_score_0`	INTEGER DEFAULT 0,
 	`accuracy_0`	REAL DEFAULT 0,
@@ -46,3 +48,7 @@ CREATE TABLE "user_status" (
 	`country`	TEXT DEFAULT 'XX',
 	PRIMARY KEY(`id`)
 );
+INSERT INTO user_status VALUES(1,0,0.0,0,0,0.0,0,0.0,0,0,0.0,0,0.0,0,0,0.0,0,0.0,0,0,0.0,0,0,0,0,'XX');
+DELETE FROM sqlite_sequence;
+INSERT INTO sqlite_sequence VALUES('users',1);
+COMMIT;
