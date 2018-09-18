@@ -18,6 +18,7 @@ exports.getIdFromUsername = (username) => {
       return
     }
     data = row.id
+  }, () => {
     done = true
   })
   deasync.loopWhile(() => {
@@ -37,6 +38,8 @@ exports.getUsernameFromId = (id) => {
     }
     data = row.username
     done = true
+  }, () => {
+    done = true
   })
   deasync.loopWhile(() => {
     return !done
@@ -54,6 +57,8 @@ exports.getEasyUsernameFromId = (id) => {
       return
     }
     data = row.username_easy
+    done = true
+  }, () => {
     done = true
   })
   deasync.loopWhile(() => {
@@ -73,6 +78,8 @@ exports.checkLoginIsOk = (id, pass) => {
     }
     data = row.password === pass
     done = true
+  }, () => {
+    done = true
   })
   deasync.loopWhile(() => {
     return !done
@@ -90,6 +97,8 @@ exports.getPermission = (id) => {
       return
     }
     data = row.permission
+    done = true
+  }, () => {
     done = true
   })
   deasync.loopWhile(() => {
@@ -110,6 +119,8 @@ exports.getFriends = (id) => {
     rows.forEach((a) => {
       data.push(a)
     })
+    done = true
+  }, () => {
     done = true
   })
   deasync.loopWhile(() => {
@@ -132,6 +143,8 @@ exports.getStatus = (id, mode) => {
     }
     data = row
     done = true
+  }, () => {
+    done = true
   })
   deasync.loopWhile(() => {
     return !done
@@ -149,6 +162,8 @@ exports.getGameRank = (id, mode) => {
       return
     }
     data = row.game_rank
+    done = true
+  }, () => {
     done = true
   })
   deasync.loopWhile(() => {
@@ -179,6 +194,8 @@ exports.getSilenceEnd = (id) => {
     }
     data = row.silence_time
     done = true
+  }, () => {
+    done = true
   })
   deasync.loopWhile(() => {
     return !done
@@ -205,6 +222,8 @@ exports.getCountry = (id) => {
       return
     }
     data = row.country
+    done = true
+  }, () => {
     done = true
   })
   deasync.loopWhile(() => {

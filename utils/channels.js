@@ -6,21 +6,23 @@ module.exports = class {
   }
 
   loadChannels () {
-    let channelss = fs.readFileSync('../db/channels.json')
+    let channelss = fs.readFileSync('db/channels.json')
     channelss = JSON.parse(channelss)
 
     Object.keys(channelss).forEach(x => {
       if (!(x in this.channels)) {
         let Read = Boolean(channelss[x]['read'])
         let Write = Boolean(channelss[x]['write'])
-        this.addChannel(x, channelss[x]['description'], Read, Write)
+        let temp = Boolean(channelss[x]['temp'])
+        let hidden = Boolean(channelss[x]['hidden'])
+        this.addChannel(x, channelss[x]['description'], Read, Write, temp, hidden)
       }
     })
   }
 
   addChannel (name, desc, Read, Write, temp = false, hidden = false) {
     share.streams.add(`chat/${name}`)
-    this.channels[name] = channel(name, desc, Read, Write, temp, hidden)
+    this.channels[name] = new channel(name, desc, Read, Write, temp, hidden)
   }
 
   addTempChannel (name) {
@@ -28,7 +30,7 @@ module.exports = class {
       return false
     }
     share.streams.add(`chat/${name}`)
-    this.channels[name] = channel(name, 'Chat', true, true, true, true)
+    this.channels[name] = new channel(name, 'Chat', true, true, true, true)
   }
 
   addHiddenChannel (name) {

@@ -1,5 +1,5 @@
 module.exports = (userToken, packetData) => {
-  let userID = userToken.userID
+  let userID = userToken.userid
   let username = userToken.username
 
   packetData = utils.clientPackets.userActionChange(packetData)
@@ -26,7 +26,7 @@ module.exports = (userToken, packetData) => {
 
   recipients.forEach(i => {
     if (i) {
-      let force = (i === userToken) ? true : false
+      let force = i === userToken
       i.addpackets(utils.packets.userPanel(userID, force))
       i.addpackets(utils.packets.userStatus(userID, force))
     }

@@ -341,7 +341,7 @@ module.exports = class {
 
   addMessageInBuffer (chan, msg) {
     if (this.messages.length > 9) {
-      this.messages = slice.default(this.messages)['1:']
+      this.messages = this.messages.slice(0, 1)
     }
     this.messages.push(`${dateFormat(new Date(), 'HH:MM')} - ${this.username}@${chan}: ${slice.default(msg)[':50']}`)
   }

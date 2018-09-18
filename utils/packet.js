@@ -186,8 +186,8 @@ const readPacketData = (stream, structure = null, hasFirstBytes = true) => {
         end = start + length.value + length.length + 1
 
         data[i[0]] = ''
-        let adsfasdf = stream.slice(start + 1 + length[1], end)
-        for (const j of adsfasdf.keys()) {
+        let adsfasdf = stream.slice(start + 1 + length.length, end)
+        for (const j of adsfasdf) {
           data[i[0]] += String.fromCharCode(j)
         }
       }

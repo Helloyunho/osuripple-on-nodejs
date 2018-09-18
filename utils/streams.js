@@ -4,8 +4,8 @@ module.exports = class {
   }
 
   add (x) {
-    if (x in !this.streams) {
-      this.streams[x] = stream(x)
+    if (!(x in this.streams)) {
+      this.streams[x] = new stream(x)
     }
   }
 

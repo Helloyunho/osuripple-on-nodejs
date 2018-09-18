@@ -1,7 +1,30 @@
 {
-    "Exmaple": {
+    "#Exmaple": {
         "read": true,
         "write": false,
+        "hidden": true,
+        "temp": false,
         "description": "Simple Example"
+    },
+    "#osu": {
+        "read": true,
+        "write": true,
+        "hidden": false,
+        "temp": false,
+        "description": "AWESOME Lobby"
+    },
+    "#announce": {
+        "read": true,
+        "write": false,
+        "hidden": false,
+        "temp": false,
+        "description": "Announce Litraly"
+    },
+    "#admin": {
+        "read": true,
+        "write": true,
+        "hidden": true,
+        "temp": false,
+        "description": "admin"
     }
 }

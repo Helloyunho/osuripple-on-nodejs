@@ -17,7 +17,7 @@ module.exports = class {
     }
 
     let botToken = share.tokens.getTokenFromUserid(1)
-    if (!botToken) {
+    if (botToken) {
       botToken.joinChannel(this)
     }
   }

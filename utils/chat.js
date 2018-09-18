@@ -59,7 +59,7 @@ module.exports.partChannel = (id = 0, channel = '', token = null, toirc = true, 
     return 403
   }
 
-  if (!token.joinedChannel.includes(channel)) {
+  if (!token.joinedChannels.includes(channel)) {
     return 442
   }
 
@@ -128,8 +128,8 @@ module.exports.sendMessage = (from = '', to = '', message = '', token = null, to
     return 404
   }
 
-  message = (message.length > 2048) ? slice.default(message)[':2048'] + '...' : message
-
+  message = (message.length > 2048) ? message.slice(0, 2048) + '...' : message
+  
   let packett = packets.sendMessage(token.username, toClient, message)
 
   let isChannel = to.startsWith('#')
@@ -169,7 +169,7 @@ module.exports.sendMessage = (from = '', to = '', message = '', token = null, to
   if (toirc) {
     let messageSplitInLines = decoding.write(encoding(message, 'latin-1')).split('\n')
     messageSplitInLines.forEach(x => {
-      if (x === slice.default(messageSplitInLines)[':1'] && x === '') {
+      if (x === messageSplitInLines.slice(0, 1) && x === '') {
         return
       }
       share.irc.banchoMessage(from, to, x)

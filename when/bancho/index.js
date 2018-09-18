@@ -7,5 +7,6 @@ module.exports = {
   userStatsRequest: require('./userStatsRequest'),
   channelJoin: require('./channelJoin'),
   channelPart: require('./channelPart'),
-  pongpong: require('./pongpong')
+  pongpong: require('./pongpong'),
+  sendPublicMessage: require('./sendPublicMessage')
 }

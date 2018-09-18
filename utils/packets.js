@@ -81,7 +81,7 @@ module.exports.logout = (id) => {
 
 module.exports.userPanel = (id, force = false) => {
   let userToken = share.tokens.getTokenFromUserid(id)
-  if (!userToken || (userToken.restricted && !force)) {
+  if ((!userToken || userToken.restricted) && !force) {
     return Buffer.from([])
   }
 
@@ -117,7 +117,7 @@ module.exports.userPanel = (id, force = false) => {
 
 module.exports.userStatus = (id, force = false) => {
   let userToken = share.tokens.getTokenFromUserid(id)
-  if (!userToken || ((userToken.restricted || userToken.irc || userToken.tournament) && !force)) {
+  if ((!userToken || (userToken.restricted || userToken.irc || userToken.tournament)) && !force) {
     return Buffer.from([])
   }
 

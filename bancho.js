@@ -69,6 +69,7 @@ app.route('/')
           eventHandler[utils.packetid.client_userStatsRequest] = eventHandle(when.userStatsRequest)
           eventHandler[utils.packetid.client_channelJoin] = eventHandle(when.channelJoin)
           eventHandler[utils.packetid.client_channelPart] = eventHandle(when.channelPart)
+          eventHandler[utils.packetid.client_sendPublicMessage] = eventHandle(when.sendPublicMessage)
           eventHandler[4] = eventHandle(when.pongpong)
 
           let packetsRestricted = [
@@ -78,6 +79,7 @@ app.route('/')
             utils.packetid.client_userStatsRequest,
             utils.packetid.client_channelPart,
             utils.packetid.client_channelJoin,
+            utils.packetid.client_changeAction,
             4
           ]
 

@@ -22,7 +22,7 @@ const rawBodySaver = (req, res, buf, encoding) => {
 
 const request = require('request')
 
-app.use(bodyParser.raw({verify: rawBodySaver, type: () => { return true }}))
+app.use(bodyParser.raw({limit: '50mb', verify: rawBodySaver, type: () => { return true }}))
 app.set('port', 5002)
 
 server.listen(app.get('port'), () => {
