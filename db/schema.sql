@@ -32,7 +32,7 @@ INSERT INTO "users" (
 	'if your see this, you should change this to password with md5 encrypted',
 	1,
 	'a_bot',
-	NULL,
+	0,
 	NULL,
 	0,
 	NULL,
