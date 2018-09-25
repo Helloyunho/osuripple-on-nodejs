@@ -36,6 +36,7 @@ module.exports = class {
       if (x in share.tokens.tokens) {
         if (!nope.includes(x)) {
           share.tokens.tokens[x].addpackets(data)
+          console.log(share.tokens.tokens[x].queue)
         }
       } else {
         this.removeClient(null, x)

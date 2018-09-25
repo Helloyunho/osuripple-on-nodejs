@@ -1,5 +1,3 @@
-const slice = require('slice.js')
-
 module.exports = (req) => {
   let resTokenString = 'ayy'
   let resData = Buffer.from([])
@@ -16,7 +14,7 @@ module.exports = (req) => {
   let closerInfo = loginInfo[2].split('|')
   let osuVersion = closerInfo[0]
   let timeOffset = Number(closerInfo[1])
-  let clientData = slice.default(closerInfo[3].split(':'))[':5']
+  let clientData = closerInfo[3].split(':').slice(0, 5)
   if (clientData.length < 4) {
     resData = Buffer.concat([resData, utils.packets.loginFailed(), utils.packets.notification('What are you doing?')])
     return returnObject(resTokenString, resData)
@@ -41,7 +39,7 @@ module.exports = (req) => {
     resData = Buffer.concat([resData, utils.packets.Banned()])
     return returnObject(resTokenString, resData)
   }
-  
+
   let isTournament = osuVersion.includes('tourney')
   if (!isTournament) {
     share.tokens.deleteOldTokens(userID)
@@ -89,7 +87,7 @@ module.exports = (req) => {
 
   Object.values(share.tokens.tokens).forEach(i => {
     if (!i.restricted) {
-      resToken.addpackets(utils.packets.userPanel(i.userID))
+      resToken.addpackets(utils.packets.userPanel(i.userid))
     }
   })
 

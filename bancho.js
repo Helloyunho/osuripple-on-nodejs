@@ -16,6 +16,20 @@ app.set('port', 5001)
 
 server.listen(app.get('port'), () => {
   console.log('Welcome to osu! server!')
+  share.streams.add('main')
+  share.streams.add('lobby')
+  share.redis.subscribe('bancho:update_cached_stats')
+  share.redis.on('message', (channel, message) => {
+    if (channel === 'bancho:update_cached_stats') {
+      console.log('recived: update_cached_stats')
+      let userID = Number(message)
+      if (!userID) {
+        return undefined
+      }
+      let token = share.tokens.getTokenFromUserid(userID)
+      token.updateStatus()
+    }
+  })
   utils.abot.connect()
 })
 
@@ -40,7 +54,7 @@ app.route('/')
 
       if (!(reqToken in share.tokens.tokens)) {
         resData = utils.packets.loginFailed()
-        resData = Buffer.concat([resData, utils.packets.notification('OMG! Something went wrong... Please login again!')])
+        resData = Buffer.concat([resData, utils.packets.notification('OMG! Server is rebooted... Please login again!')])
       } else {
         userToken = share.tokens.tokens[reqToken]
 
@@ -51,7 +65,9 @@ app.route('/')
           let dataLength = utils.packet.readPacketLength(leftData)
           let packetData = reqData.slice(pos, (pos + dataLength + 7))
 
-          utils.consoleColor.log(`${reqToken} sended packet id: ${packetID}`)
+          if (packetID !== 4) {
+            utils.consoleColor.log(`${reqToken} sended packet id: ${packetID}`)
+          }
 
           const eventHandle = ev => {
             const wrapper = () => {
@@ -70,7 +86,37 @@ app.route('/')
           eventHandler[utils.packetid.client_channelJoin] = eventHandle(when.channelJoin)
           eventHandler[utils.packetid.client_channelPart] = eventHandle(when.channelPart)
           eventHandler[utils.packetid.client_sendPublicMessage] = eventHandle(when.sendPublicMessage)
-          eventHandler[4] = eventHandle(when.pongpong)
+          eventHandler[utils.packetid.client_sendPrivateMessage] = eventHandle(when.sendPrivateMessage)
+          eventHandler[utils.packetid.client_spectateFrames] = eventHandle(when.spectateFrames)
+          eventHandler[utils.packetid.client_startSpectating] = eventHandle(when.startSpectating)
+          eventHandler[utils.packetid.client_stopSpectating] = eventHandle(when.stopSpectating)
+          eventHandler[utils.packetid.client_matchChangeMods] = eventHandle(when.changeMatchMods)
+          eventHandler[utils.packetid.client_matchChangePassword] = eventHandle(when.changeMatchPassword)
+          eventHandler[utils.packetid.client_matchChangeSettings] = eventHandle(when.changeMatchSettings)
+          eventHandler[utils.packetid.client_cantSpectate] = eventHandle(when.cantSpectate)
+          eventHandler[utils.packetid.client_matchChangeSlot] = eventHandle(when.changeSlot)
+          eventHandler[utils.packetid.client_createMatch] = eventHandle(when.createMatch)
+          eventHandler[utils.packetid.client_joinLobby] = eventHandle(when.joinLobby)
+          eventHandler[utils.packetid.client_joinMatch] = eventHandle(when.joinMatch)
+          eventHandler[utils.packetid.client_matchChangeTeam] = eventHandle(when.matchChangeTeam)
+          eventHandler[utils.packetid.client_matchComplete] = eventHandle(when.matchComplete)
+          eventHandler[utils.packetid.client_matchFailed] = eventHandle(when.matchFailed)
+          eventHandler[utils.packetid.client_matchScoreUpdate] = eventHandle(when.matchFrames)
+          eventHandler[utils.packetid.client_matchHasBeatmap] = eventHandle(when.matchHasBeatmap)
+          eventHandler[utils.packetid.client_invite] = eventHandle(when.matchInvite)
+          eventHandler[utils.packetid.client_matchLock] = eventHandle(when.matchLock)
+          eventHandler[utils.packetid.client_matchNoBeatmap] = eventHandle(when.matchNoBeatmap)
+          eventHandler[utils.packetid.client_matchLoadComplete] = eventHandle(when.matchPlayerLoad)
+          eventHandler[utils.packetid.client_matchReady] = eventHandle(when.matchReady)
+          eventHandler[utils.packetid.client_matchNotReady] = eventHandle(when.matchReady)
+          eventHandler[utils.packetid.client_matchSkipRequest] = eventHandle(when.matchSkip)
+          eventHandler[utils.packetid.client_matchStart] = eventHandle(when.matchStart)
+          eventHandler[utils.packetid.client_matchTransferHost] = eventHandle(when.matchTransferHost)
+          eventHandler[utils.packetid.client_partLobby] = eventHandle(when.partLobby)
+          eventHandler[utils.packetid.client_partMatch] = eventHandle(when.partMatch)
+          eventHandler[utils.packetid.client_setAwayMessage] = eventHandle(when.setAwayMessage)
+          eventHandler[utils.packetid.client_friendAdd] = eventHandle(when.friendAdd)
+          eventHandler[utils.packetid.client_friendRemove] = eventHandle(when.friendAdd)
 
           let packetsRestricted = [
             utils.packetid.client_logout,
@@ -79,18 +125,19 @@ app.route('/')
             utils.packetid.client_userStatsRequest,
             utils.packetid.client_channelPart,
             utils.packetid.client_channelJoin,
-            utils.packetid.client_changeAction,
-            4
+            utils.packetid.client_changeAction
           ]
 
-          if (packetID in eventHandler) {
-            if (!userToken.restricted || (userToken.restricted && packetID in packetsRestricted)) {
-              eventHandler[packetID]()
+          if (packetID !== 4) {
+            if (packetID in eventHandler) {
+              if (!userToken.restricted || (userToken.restricted && packetID in packetsRestricted)) {
+                eventHandler[packetID]()
+              } else {
+                utils.consoleColor.warn(`${reqToken} is restricted so ignored`)
+              }
             } else {
-              utils.consoleColor.warn(`${reqToken} is restricted so ignored`)
+              utils.consoleColor.warn(`${reqToken} sended unknown packet id: ${packetID}`)
             }
-          } else {
-            utils.consoleColor.warn(`${reqToken} sended unknown packet id: ${packetID}`)
           }
 
           pos += dataLength + 7

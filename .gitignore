@@ -192,3 +192,11 @@ venv.bak/
 
 # End of https://www.gitignore.io/api/node,python,visualstudiocode
 package-lock.json
+
+nodec
+a.out
+yarn.lock
+config.json
+secret.js
+log.log
+db/osu.db

@@ -53,6 +53,8 @@ module.exports = class {
     }
 
     this.updateStatus()
+
+    this.joinStream('main')
   }
 
   updateStatus () {
@@ -89,7 +91,7 @@ module.exports = class {
     if (packet.length < 10 * 10 ** 6) {
       this.queue = Buffer.concat([this.queue, packet])
     } else {
-      consoleColor.warn(`Wait, Username ${this.username}'s packets buffer is over 10M!! Stoped!`)
+      consoleColor.warn(`Wait, Username ${this.username}'s packets buffer is over 10M!! Stopped!`)
     }
   }
   resetpackets () {
@@ -105,6 +107,7 @@ module.exports = class {
 
     a.spectators.push(this.token)
 
+    console.log('spect')
     let streamname = `spect/${a.userid}`
     share.streams.add(streamname)
     this.joinStream(streamname)
@@ -306,7 +309,7 @@ module.exports = class {
   // silence
 
   isSilenced () {
-    return this.silenceEndTime - Date.now() > 0
+    return (this.silenceEndTime - Date.now()) > 0
   }
 
   getSilenceLeft () {
@@ -332,7 +335,7 @@ module.exports = class {
       this.spamRate++
     }
 
-    if (this.spamRate > 10) {
+    if (this.spamRate > 10 && !share.config.debug) {
       this.silence(1800, 'Spamming (A Bot\'s auto spam detection)')
     }
   }

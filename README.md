@@ -32,7 +32,7 @@ thinking
 1. Import .sql file to osu.db (`sqlite3 osu.db '.read schema.sql'`).
 2. Add new row on table `users` and edit it to your awesome account!
 3. Add new row on table `user_status`.
-4. Type `node bancho.js` and `node site_emu.js` to run the server.
+4. Type `node bancho.js` and `node site_emu.js` to run the server. (You must running both at same time)
 5. Create a self-signed SSL certificate, This is most important thing 'cause if you skip this part, you can't log in to your osu server. [I think this article is helpful](https://www.akadia.com/services/ssh_test_certificate.html) But... when you type 'Common Name', you must type it to '*.ppy.sh'.
 6. Config your http server(c.ppy.sh and c1.ppy.sh must set reverse proxy ip to ip:5001, and osu.ppy.sh set reverse proxy ip to ip:5002) and done!
 

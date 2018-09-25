@@ -6,8 +6,6 @@ const uleb128 = require('uleb128')
 
 const encoding = require('encoding')
 
-const deasync = require('deasync')
-
 // By https://stackoverflow.com/a/8273091/9376340
 function range (start, stop, step) {
   if (typeof stop === 'undefined') {

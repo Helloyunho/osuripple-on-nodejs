@@ -1,7 +1,5 @@
 module.exports = (userToken, _ = null, deleteToken = true) => {
   let userID = userToken.userid
-  let username = userToken.username
-  let reqToken = userToken.token
 
   if ((Date.now() - userToken.loginTime) >= 5 || userToken.irc) {
     userToken.stopSpectating()

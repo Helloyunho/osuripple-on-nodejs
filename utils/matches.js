@@ -6,10 +6,10 @@ module.exports = class {
     this.lastID = 1
   }
 
-  createMatch(matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID, isTourney = false) {
+  createMatch (matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID, isTourney = false) {
     let matchID = this.lastID
     this.lastID++
-    this.matches[matchID] = new match(matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID, isTourney)
+    this.matches[matchID] = new Match(matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID, isTourney)
     return matchID
   }
 
@@ -70,4 +70,4 @@ module.exports = class {
 
 const share = require('../share')
 const packets = require('./packets')
-const match = require('./match')
+const Match = require('./match')

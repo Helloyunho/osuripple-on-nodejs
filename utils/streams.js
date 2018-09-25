@@ -5,14 +5,14 @@ module.exports = class {
 
   add (x) {
     if (!(x in this.streams)) {
-      this.streams[x] = new stream(x)
+      this.streams[x] = new Stream(x)
     }
   }
 
   remove (x) {
     if (x in this.streams) {
       this.streams[x].clients.forEach(y => {
-        if (share.tokens.tokens.includes(y)) {
+        if (y in share.tokens.tokens) {
           share.tokens.tokens[y].leaveStream(x)
         }
       })
@@ -56,5 +56,5 @@ module.exports = class {
   }
 }
 
-const stream = require('./stream')
+const Stream = require('./stream')
 const share = require('../share')

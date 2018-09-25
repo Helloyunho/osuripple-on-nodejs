@@ -97,16 +97,16 @@ module.exports = class {
     ])
 
     range(0, 16).forEach(i => {
-      struct.append([this.slots[i].status, datatypes.byte])
+      struct.push([this.slots[i].status, datatypes.byte])
     })
 
     range(0, 16).forEach(i => {
-      struct.append([this.slots[i].team, datatypes.byte])
+      struct.push([this.slots[i].team, datatypes.byte])
     })
 
     range(0, 16).forEach(i => {
       if (this.slots[i].user && this.slots[i].user in share.tokens.tokens) {
-        struct.append([share.tokens.tokens[this.slots[i].user].userid, datatypes.uInt32])
+        struct.push([share.tokens.tokens[this.slots[i].user].userid, datatypes.uInt32])
       }
     })
 
@@ -144,12 +144,12 @@ module.exports = class {
 
   setHost (newHost) {
     let slotID = this.getUserSlotID(newHost)
-    if (!slotID || !(this.slots[slotID].user in share.tokens.tokens)) {
+    if ((typeof slotID) !== 'number' || !(this.slots[slotID].user in share.tokens.tokens)) {
       return false
     }
     let token = share.tokens.tokens[this.slots[slotID].user]
     this.hostUserID = newHost
-    token.addpacket(packets.matchTransferHost())
+    token.addpackets(packets.matchTransferHost())
     this.sendUpdates()
     return true
   }
@@ -223,7 +223,7 @@ module.exports = class {
 
   playerLoaded (id) {
     let slotid = this.getUserSlotID(id)
-    if (!slotid) {
+    if ((typeof slotid) !== 'number') {
       return
     }
 
@@ -253,7 +253,7 @@ module.exports = class {
   playerSkip (id) {
     let slotid = this.getUserSlotID(id)
 
-    if (!slotid) {
+    if ((typeof slotid) !== 'number') {
       return
     }
 
@@ -286,7 +286,7 @@ module.exports = class {
     let data = null
 
     range(0, 16).forEach((x) => {
-      if (this.slots[x].user && this.slots[x].user in share.tokens.tokens && share.tokens.tokens[this.slots[x].user].userid === id) {
+      if (this.slots[x].user && (this.slots[x].user in share.tokens.tokens) && (share.tokens.tokens[this.slots[x].user].userid === id)) {
         data = x
       }
     })
@@ -304,7 +304,7 @@ module.exports = class {
 
   playerCompleted (id) {
     let slotid = this.getUserSlotID(id)
-    if (!slotid) {
+    if ((typeof slotid) !== 'number') {
       return
     }
     this.setSlot(slotid, null, null, '', 0, null, null, true)
@@ -380,25 +380,27 @@ module.exports = class {
 
   userJoin (user) {
     let rangeList = range(0, 16)
-    let data = null
+    let data = false
 
     rangeList.forEach(i => {
       if (this.slots[i].user === user.token) {
-        this.setSlot(i, matchtypes.Statuses.FREE, 0, null, 0)
+        this.setSlot(i, matchtypes.Statuses.FREE, 0, undefined, 0)
       }
     })
 
     rangeList.forEach((i) => {
-      if (this.slots[i].status === matchtypes.Statuses.FREE) {
-        let team = matchtypes.Teams.NO_TEAM
-        if (this.matchTeamType === matchtypes.TeamTypes.TEAM_VS || this.matchTeamType === matchtypes.TeamTypes.TAG_TEAM_VS) {
-          team = (i % 2 === 0) ? matchtypes.Teams.RED : matchtypes.Teams.BLUE
+      if (!data) {
+        if (this.slots[i].status === matchtypes.Statuses.FREE) {
+          let team = matchtypes.Teams.NO_TEAM
+          if ((this.matchTeamType === matchtypes.TeamTypes.TEAM_VS) || (this.matchTeamType === matchtypes.TeamTypes.TAG_TEAM_VS)) {
+            team = (i % 2 === 0) ? matchtypes.Teams.RED : matchtypes.Teams.BLUE
+          }
+          this.setSlot(i, matchtypes.Statuses.NOT_READY, team, user.token, 0)
+
+          this.sendUpdates()
+
+          data = true
         }
-        this.setSlot(i, matchtypes.Statuses.NOT_READY, team, user.token, 0)
-
-        this.sendUpdates()
-
-        data = true
       }
     })
 
@@ -407,13 +409,13 @@ module.exports = class {
 
   userLeft (user, disposeMatch = true) {
     let slotid = this.getUserSlotID(user.userid)
-    if (!slotid) {
+    if ((typeof slotid) !== 'number') {
       return null
     }
 
     this.setSlot(slotid, matchtypes.Statuses.FREE, 0, null, 0)
 
-    if (this.coundUsers() === 0 && disposeMatch && !this.isTourney) {
+    if (this.countUsers() === 0 && disposeMatch && !this.isTourney) {
       share.matches.disposeMatch(this.matchID)
       return null
     }
@@ -436,7 +438,7 @@ module.exports = class {
     }
 
     let oldSlotID = this.getUserSlotID(userid)
-    if (!oldSlotID) {
+    if ((typeof oldSlotID) !== 'number') {
       return false
     }
 
@@ -470,7 +472,7 @@ module.exports = class {
 
   userHasBeatmap (userid, has = true) {
     let slotID = this.getUserSlotID(userid)
-    if (!slotID) {
+    if ((typeof slotID) !== 'number') {
       return null
     }
 
@@ -489,7 +491,7 @@ module.exports = class {
 
   playerFailed (userid) {
     let slotID = this.getUserSlotID(userid)
-    if (!slotID) {
+    if ((typeof slotID) !== 'number') {
       return null
     }
 
@@ -533,7 +535,7 @@ module.exports = class {
     }
 
     let slotID = this.getUserSlotID(userid)
-    if (!slotID) {
+    if ((typeof slotID) !== 'number') {
       return null
     }
 

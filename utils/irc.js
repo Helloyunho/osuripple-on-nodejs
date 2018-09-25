@@ -4,23 +4,16 @@ const encoding = require('encoding')
 const decoder = require('legacy-encoding').decode
 const slice = require('slice.js')
 const md5 = require('md5')
-const sqlite3 = require('sqlite3').verbose()
-
-let db = new sqlite3.Database('./db/osu.db', (err) => {
-  if (err) {
-    return console.error(err.message)
-  }
-})
 
 // By https://stackoverflow.com/a/281335/9376340
-Array.prototype.clean = function (deleteValue) {
-  for (var i = 0; i < this.length; i++) {
-    if (this[i] == deleteValue) {
-      this.splice(i, 1)
+const clean = (array, deleteValue) => {
+  for (let i = 0; i < array.length; i++) {
+    if (array[i] === deleteValue) {
+      array.splice(i, 1)
       i--
     }
   }
-  return this
+  return array
 }
 
 class Client {
@@ -135,7 +128,7 @@ class Client {
           arg = [slice.default(x[1])['1:']]
         } else {
           let z = y[1].split(' :', 1)
-          arg = z[0].split(' ').clean('')
+          arg = clean(z[0].split(' '), '')
           if (z.length === 2) {
             arg.push(z[1])
           }
@@ -200,15 +193,14 @@ class Client {
         this.reply461('PASS')
       } else {
         let tokenHash = md5(encoding.convert(args[0], 'utf-8'))
-        db.each('SELECT users.username, users.id FROM users LEFT JOIN irc_tokens ON users.id = irc_tokens.id WHERE irc_tokens.token = ? LIMIT 1', [tokenHash], (err, row) => {
-          if (err) {
-            this.reply('464 :Password incorrect')
-            return
-          }
-          this.supposedUsername = chat.UsernameForIRC(row.username)
-          this.supposedID = row.id
-          this.__handleCommand = this.registerHandler
-        })
+        let row = share.db.prepare('SELECT users.username, users.id FROM users LEFT JOIN irc_tokens ON users.id = irc_tokens.id WHERE irc_tokens.token = ? LIMIT 1').get([tokenHash])
+        if (!row) {
+          this.reply('464 :Password incorrect')
+          return
+        }
+        this.supposedUsername = chat.UsernameForIRC(row.username)
+        this.supposedID = row.id
+        this.__handleCommand = this.registerHandler
       }
     } else if (command === 'QUIT') {
       this.disconnect()
@@ -556,14 +548,6 @@ module.exports = class {
     })
   }
 }
-
-process.on('exit', () => {
-  db.close((err) => {
-    if (err) {
-      return console.error(err)
-    }
-  })
-})
 
 const share = require('../share')
 const chat = require('./chat')

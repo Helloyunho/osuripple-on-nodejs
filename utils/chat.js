@@ -1,4 +1,3 @@
-const slice = require('slice.js')
 const encoding = require('encoding')
 const { StringDecoder } = require('string_decoder')
 const decoding = new StringDecoder('utf-8')
@@ -73,7 +72,7 @@ module.exports.partChannel = (id = 0, channel = '', token = null, toirc = true, 
   }
 
   if (kick) {
-    token.addpacket(packets.channelKicked(channelClient))
+    token.addpackets(packets.channelKicked(channelClient))
   }
 
   if (toirc) {
@@ -99,7 +98,7 @@ module.exports.sendMessage = (from = '', to = '', message = '', token = null, to
   }
 
   if (token.isSilenced()) {
-    token.addpacket(packets.silenceEndtime(token.getSilenceLeft()))
+    token.addpackets(packets.silenceEndtime(token.getSilenceLeft()))
     return 404
   }
 
@@ -129,7 +128,7 @@ module.exports.sendMessage = (from = '', to = '', message = '', token = null, to
   }
 
   message = (message.length > 2048) ? message.slice(0, 2048) + '...' : message
-  
+
   let packett = packets.sendMessage(token.username, toClient, message)
 
   let isChannel = to.startsWith('#')
@@ -142,7 +141,7 @@ module.exports.sendMessage = (from = '', to = '', message = '', token = null, to
       return 404
     }
 
-    if (!(share.channels.channels[to].Write && token.admin)) {
+    if (!share.channels.channels[to].Write && !token.admin) {
       return 404
     }
 
@@ -160,14 +159,16 @@ module.exports.sendMessage = (from = '', to = '', message = '', token = null, to
     }
 
     if (recipientToken.awayCheck(token.id)) {
+      console.log('away')
       module.exports.sendMessage(from, to, `\x01ACTION is away: ${recipientToken.awayMessage}\x01`)
     }
 
-    recipientToken.addpacket(packett)
+    recipientToken.addpackets(packett)
   }
 
   if (toirc) {
-    let messageSplitInLines = decoding.write(encoding(message, 'latin-1')).split('\n')
+    let converted = encoding.convert(message, 'Latin_1')
+    let messageSplitInLines = decoding.write(converted).split('\n')
     messageSplitInLines.forEach(x => {
       if (x === messageSplitInLines.slice(0, 1) && x === '') {
         return
@@ -180,12 +181,16 @@ module.exports.sendMessage = (from = '', to = '', message = '', token = null, to
     token.spamProtection()
   }
 
-  if (isChannel || to.toLowerCase() === 'A Bot') {
-    module.exports.sendMessage('A Bot', (isChannel) ? to : from, 'Test!')
+  if (isChannel || to.toLowerCase() === 'a bot') {
+    let botmessage = abot.response(token.username, to, message)
+    if (botmessage) {
+      module.exports.sendMessage('A Bot', (isChannel) ? to : from, botmessage)
+    }
   }
 
   if (to.startsWith('#') && !(message.startsWith('\x01ACTION is playing') && to.startsWith('#spect_'))) {
-    share.log_file.write(`"${from}" -> "${to}": ${StringDecoder(encoding.convert(message, 'latin-1'))}`)
+    let converted = encoding.convert(message, 'Latin_1')
+    share.log_file.write(`"${from}" -> "${to}": ${decoding.end(converted)}`)
   }
   return 0
 }
@@ -256,4 +261,5 @@ module.exports.UsernameForIRC = (user) => {
 const userutil = require('./user')
 const share = require('../share')
 const packets = require('./packets')
+const abot = require('./abot')
 const consoleColor = require('./consoleColor')

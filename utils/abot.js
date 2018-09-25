@@ -9,6 +9,12 @@ module.exports.disconnect = () => {
   share.tokens.removetoken(share.tokens.getTokenFromUserid(1))
 }
 
+module.exports.response = (from, to, message) => {
+  if (message.startsWith('!test')) {
+    return 'Test!'
+  }
+}
+
 const userutil = require('./user')
 const packets = require('./packets')
 const share = require('../share')

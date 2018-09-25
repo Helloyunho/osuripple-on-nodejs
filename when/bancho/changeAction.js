@@ -1,6 +1,5 @@
 module.exports = (userToken, packetData) => {
   let userID = userToken.userid
-  let username = userToken.username
 
   packetData = utils.clientPackets.userActionChange(packetData)
 

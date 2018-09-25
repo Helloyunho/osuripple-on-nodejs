@@ -1,5 +1,3 @@
-const slice = require('slice.js')
-
 // login errors
 module.exports.loginFailed = () => {
   return packet.buildPacket(packetid.server_userID, [[-1, datatypes.sInt32]])
@@ -268,7 +266,7 @@ module.exports.allPlayersSkipped = () => {
 }
 
 module.exports.matchFrames = (id, data) => {
-  return packet.buildPacket(packetid.server_matchScoreUpdate, [[slice.default(data)['7:11'], datatypes.bbytes], [id, datatypes.bbytes], [slice.default(data)['12:'], datatypes.bbytes]])
+  return packet.buildPacket(packetid.server_matchScoreUpdate, [[data.slice(7, 11), datatypes.bbytes], [id, datatypes.byte], [data.slice(12), datatypes.bbytes]])
 }
 
 module.exports.matchCompete = () => {

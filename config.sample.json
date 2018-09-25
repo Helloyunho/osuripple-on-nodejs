@@ -1,0 +1,20 @@
+{
+  "debug": true,
+  "memeTitles": [
+    "Dank memes",
+    "WHAT THE FAK IS THIS BOT",
+    "JS is a garbage",
+    "MOM GET THE TABLET",
+    "ILLUMINATI CONFIRMED",
+    "CHEATER's room"
+  ],
+  "beatmapcacheexpire": 86400,
+  "osuapi": {
+    "enable": true,
+    "apiurl": "https://osu.ppy.sh",
+    "apikey": ""
+  },
+  "redis": {
+    "this part is same as the node-redis's createClient" : "https://github.com/NodeRedis/node_redis#options-object-properties"
+  }
+}

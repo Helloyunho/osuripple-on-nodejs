@@ -16,5 +16,19 @@ module.exports = {
   channels: require('./channels'),
   location: require('./location'),
   clientPackets: require('./clientpackets'),
-  abot: require('./abot')
+  abot: require('./abot'),
+  match: require('./match'),
+  matches: require('./matches'),
+  matchType: require('./matchType'),
+  mods: require('./mods'),
+  rankedType: require('./rankedType'),
+  osuapi: require('./osuapi'),
+  beatmap: require('./beatmap'),
+  maps: require('./maps'),
+  scoreutil: require('./scoreutil'),
+  score: require('./score'),
+  scoreboard: require('./scoreboard'),
+  userStatsCache: require('./userStatsCache'),
+  personalBestCache: require('./personalBestCache'),
+  leaderboard: require('./leaderboard')
 }

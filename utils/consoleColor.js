@@ -15,3 +15,11 @@ module.exports.error = (x) => {
 module.exports.warn = (x) => {
   console.log(colors.yellow(x))
 }
+
+module.exports.debug = (x) => {
+  if (share.config.debug) {
+    console.log(colors.magenta(x))
+  }
+}
+
+const share = require('../share')

@@ -22,7 +22,7 @@ module.exports = class {
 
   addChannel (name, desc, Read, Write, temp = false, hidden = false) {
     share.streams.add(`chat/${name}`)
-    this.channels[name] = new channel(name, desc, Read, Write, temp, hidden)
+    this.channels[name] = new Channel(name, desc, Read, Write, temp, hidden)
   }
 
   addTempChannel (name) {
@@ -30,7 +30,7 @@ module.exports = class {
       return false
     }
     share.streams.add(`chat/${name}`)
-    this.channels[name] = new channel(name, 'Chat', true, true, true, true)
+    this.channels[name] = new Channel(name, 'Chat', true, true, true, true)
   }
 
   addHiddenChannel (name) {
@@ -38,7 +38,7 @@ module.exports = class {
       return false
     }
     share.streams.add(`chat/${name}`)
-    this.channels[name] = channel(name, 'Chat', true, true, false, true)
+    this.channels[name] = new Channel(name, 'Chat', true, true, false, true)
   }
 
   removeChannel (name) {
@@ -61,5 +61,5 @@ module.exports = class {
 }
 
 const share = require('../share')
-const channel = require('./channel')
+const Channel = require('./channel')
 const chat = require('./chat')

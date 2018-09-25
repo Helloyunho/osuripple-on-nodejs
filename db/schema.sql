@@ -1,25 +1,44 @@
-BEGIN TRANSACTION;
-CREATE TABLE IF NOT EXISTS "friends" (
-	`userid`	INTEGER,
-	`friendid`	INTEGER
-);
 CREATE TABLE `irc_tokens` (
 	`id`	INTEGER NOT NULL,
 	`token`	TEXT,
 	PRIMARY KEY(`id`)
 );
-CREATE TABLE IF NOT EXISTS "users" (
+CREATE TABLE "users" (
 	`id`	INTEGER NOT NULL DEFAULT 0 PRIMARY KEY AUTOINCREMENT,
 	`username`	TEXT NOT NULL,
 	`password`	TEXT NOT NULL,
-	`permission`	INTEGER DEFAULT 0,
+	`permission`	INTEGER DEFAULT 1,
 	`username_easy`	INTEGER,
 	`silence_time`	INTEGER NOT NULL DEFAULT 0,
 	`silence_reason`	INTEGER,
-	`latest_activity`	INTEGER
+	`latest_activity`	INTEGER,
+	`banned_time`	INTEGER,
+	`banned_reason`	TEXT
 );
-INSERT INTO users VALUES(1,'asdf bot','asdfasdfsdf',0,'asdf_bot',0,NULL,NULL);
-CREATE TABLE IF NOT EXISTS "user_status" (
+INSERT INTO "users" (
+	`id`,
+  `username`,
+	`password`,
+	`permission`,
+	`username_easy`,
+	`silence_time`,
+	`silence_reason`,
+	`latest_activity`,
+	`banned_time`,
+	`banned_reason`
+) VALUES (
+	1,
+	'A Bot',
+	'if your see this, you should change this to password with md5 encrypted',
+	1,
+	'a_bot',
+	NULL,
+	NULL,
+	0,
+	NULL,
+	NULL
+);
+CREATE TABLE "user_status" (
 	`id`	INTEGER NOT NULL,
 	`ranked_score_0`	INTEGER DEFAULT 0,
 	`accuracy_0`	REAL DEFAULT 0,
@@ -46,9 +65,62 @@ CREATE TABLE IF NOT EXISTS "user_status" (
 	`game_rank_2`	integer DEFAULT 0,
 	`game_rank_3`	integer DEFAULT 0,
 	`country`	TEXT DEFAULT 'XX',
+	`level_0`	INTEGER DEFAULT 0,
+	`level_1`	INTEGER DEFAULT 0,
+	`level_2`	INTEGER DEFAULT 0,
+	`level_3`	INTEGER DEFAULT 0,
 	PRIMARY KEY(`id`)
 );
-INSERT INTO user_status VALUES(1,0,0.0,0,0,0.0,0,0.0,0,0,0.0,0,0.0,0,0,0.0,0,0.0,0,0,0.0,0,0,0,0,'XX');
-DELETE FROM sqlite_sequence;
-INSERT INTO sqlite_sequence VALUES('users',1);
-COMMIT;
+CREATE TABLE "friends" (
+	`userid`	INTEGER,
+	`friendid`	INTEGER,
+	`id`	INTEGER NOT NULL,
+	PRIMARY KEY(`id`)
+);
+CREATE TABLE "scores" (
+	`id`	INTEGER NOT NULL,
+	`userid`	INTEGER,
+	`score`	INTEGER,
+	`max_combo`	INTEGER,
+	`play_mode`	INTEGER,
+	`50_count`	INTEGER,
+	`100_count`	INTEGER,
+	`300_count`	INTEGER,
+	`misses_count`	INTEGER,
+	`katus_count`	INTEGER,
+	`gekis_count`	INTEGER,
+	`full_combo`	INTEGER,
+	`mods`	INTEGER,
+	`time`	INTEGER,
+	`beatmap_md5`	TEXT,
+	`completed`	INTEGER,
+	`pp`	REAL,
+	`accuracy`	REAL,
+	PRIMARY KEY(`id`)
+);
+CREATE TABLE "beatmaps" (
+	`beatmap_md5`	TEXT DEFAULT '',
+	`difficulty_taiko`	REAL DEFAULT 0,
+	`difficulty_ctb`	REAL DEFAULT 0,
+	`difficulty_mania`	REAL DEFAULT 0,
+	`ranked`	INTEGER DEFAULT 0,
+	`ranked_status_freezed`	INTEGER DEFAULT 0,
+	`latest_update`	INTEGER DEFAULT 0,
+	`song_name`	TEXT DEFAULT '',
+	`beatmap_id`	INTEGER DEFAULT 0,
+	`beatmapset_id`	INTEGER DEFAULT 0,
+	`ar`	REAL DEFAULT 0,
+	`od`	REAL DEFAULT 0,
+	`difficulty_std`	REAL DEFAULT 0,
+	`max_combo`	INTEGER DEFAULT 0,
+	`hit_length`	INTEGER DEFAULT 0,
+	`bpm`	INTEGER DEFAULT 0,
+	`playcount`	INTEGER DEFAULT 0,
+	`passcount`	INTEGER DEFAULT 0,
+	`id`	INTEGER NOT NULL,
+	`pp_100`	INTEGER DEFAULT 0,
+	`pp_99`	INTEGER DEFAULT 0,
+	`pp_98`	INTEGER DEFAULT 0,
+	`pp_95`	INTEGER DEFAULT 0,
+	PRIMARY KEY(`id`)
+);

@@ -49,7 +49,7 @@ module.exports = class {
     let ret = []
     let value
     Object.values(this.tokens).forEach(x => {
-      if (!(easy && x.username.toLowerCase() === who) || (easy && x.easyUsername === who)) {
+      if ((!easy && (x.username.toLowerCase() === who)) || (easy && (x.easyUsername === who))) {
         if (ignoreIRC && x.irc) {
           return
         }
@@ -136,9 +136,9 @@ module.exports = class {
 
   tokenExists (username = '', userID = -1) {
     if (userID > -1) {
-      return (this.getTokenFromUserid(userID)) ? true : false
+      return this.getTokenFromUserid(userID)
     } else {
-      return (this.getTokenFromUsername(username)) ? true : false
+      return this.getTokenFromUsername(username)
     }
   }
 }

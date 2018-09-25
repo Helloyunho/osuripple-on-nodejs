@@ -2,27 +2,15 @@ const http = require('http')
 const express = require('express')
 let app = express()
 const server = http.createServer(app)
-const bodyParser = require('body-parser')
 const compression = require('compression')
-const sqlite3 = require('sqlite3').verbose()
 const queryString = require('query-string')
+const multer = require('multer')
+const upload = multer({storage: multer.memoryStorage()})
 
 const deasync = require('deasync')
-let db = new sqlite3.Database('./db/osu.db', (err) => {
-  if (err) {
-    return console.error(err.message)
-  }
-})
 app.use(compression())
-const rawBodySaver = (req, res, buf, encoding) => {
-  if (buf && buf.length) {
-    req.rawBody = buf.toString(encoding || 'utf8')
-  }
-}
 
 const request = require('request')
-
-app.use(bodyParser.raw({limit: '50mb', verify: rawBodySaver, type: () => { return true }}))
 app.set('port', 5002)
 
 server.listen(app.get('port'), () => {
@@ -42,11 +30,13 @@ app.route('/web/bancho_connect.php').get((req, res) => {
   if (!userID) {
     res.write('error: pass\n')
     res.end()
+    return undefined
   }
 
   if (!utils.user.checkLoginIsOk(userID, req.query.h)) {
     res.write('error: pass\n')
     res.end()
+    return undefined
   }
 
   let userPer = utils.user.getPermission(userID)
@@ -58,20 +48,8 @@ app.route('/web/bancho_connect.php').get((req, res) => {
 
   let done = false
   let data = null
-  db.each('select country from user_status where id = ?', [userID], (err, row) => {
-    if (err) {
-      console.error(err)
-      done = true
-      return
-    }
-    console.log(row)
-    data = row.country
-    done = true
-  })
-  deasync.loopWhile(() => {
-    return !done
-  })
-  console.log(data)
+  let row = share.db.prepare('select country from user_status where id = ?').get([userID])
+  data = row.country
   res.write(data)
   res.end()
 })
@@ -102,7 +80,7 @@ app.route('/web/check-updates.php').get((req, res) => {
 
     let done = false
     let data = null
-    request(`https://osu.ppy.sh/web/check-updates.php?${queryString.stringify(args)}`, (err, req, body) => {
+    request(`${share.config.osuapi.apiurl}/web/check-updates.php?${queryString.stringify(args)}`, (err, req, body) => {
       if (err) {
         console.error(err)
         done = true
@@ -123,19 +101,28 @@ app.route('/web/check-updates.php').get((req, res) => {
   }
 })
 
-app.route('*').get((req, res) => {
-  let ip = req.ip
+app.route('/web/osu-osz2-getscores.php').get((req, res) => {
+  let ip = req.get('X-Real-IP')
   utils.consoleColor.log(`${ip} is connecting with url: ${req.url}`)
+  when.getScores(req, res)
 })
 
-process.on('exit', () => {
-  db.close((err) => {
-    if (err) {
-      return console.error(err)
-    }
-  })
+app.route('/web/osu-submit-modular.php').post(upload.any(), (req, res) => {
+  let ip = req.get('X-Real-IP')
+  utils.consoleColor.log(`${ip} is connecting with url: ${req.url}`)
+  let ok = when.submitModular(req, res)
+  if (!ok) {
+    res.sendStatus(408)
+    res.end()
+  }
+})
+
+app.route('*').all((req, res) => {
+  let ip = req.get('X-Real-IP')
+  utils.consoleColor.log(`${ip} is connecting with url: ${req.url}`)
 })
 
 const permission = require('./permission')
 const share = require('./share')
 const utils = require('./utils')
+const when = require('./when/score')
