@@ -1,5 +1,4 @@
 const uuidv4 = require('uuid/v4')
-const slice = require('slice.js')
 const dateFormat = require('dateformat')
 
 module.exports = class {
@@ -346,7 +345,7 @@ module.exports = class {
     if (this.messages.length > 9) {
       this.messages = this.messages.slice(0, 1)
     }
-    this.messages.push(`${dateFormat(new Date(), 'HH:MM')} - ${this.username}@${chan}: ${slice.default(msg)[':50']}`)
+    this.messages.push(`${dateFormat(new Date(), 'HH:MM')} - ${this.username}@${chan}: ${msg.slice(0, 50)}`)
   }
 
   getMessagesBufferString () {

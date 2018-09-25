@@ -2,7 +2,6 @@ const net = require('net')
 const numeral = require('numeral')
 const encoding = require('encoding')
 const decoder = require('legacy-encoding').decode
-const slice = require('slice.js')
 const md5 = require('md5')
 
 // By https://stackoverflow.com/a/281335/9376340
@@ -109,7 +108,7 @@ class Client {
   parseBuffer () {
     let lines = this.__readbuffer.split(this.__linesep_regexp)
     this.__readbuffer = lines.slice(-1)
-    lines = slice.default(lines)[':-1']
+    lines = lines.slice(0, -1)
 
     lines.forEach(x => {
       if (!x) {
@@ -125,7 +124,7 @@ class Client {
         arg = []
       } else {
         if (y[1].length > 0 && y[1][0] === ':') {
-          arg = [slice.default(x[1])['1:']]
+          arg = [x[1].slice(1)]
         } else {
           let z = y[1].split(' :', 1)
           arg = clean(z[0].split(' '), '')
@@ -142,7 +141,7 @@ class Client {
   writeSocket () {
     try {
       let sent = this.socket.write(encoding.convert(this.__writebuffer, 'utf-8'))
-      this.__writebuffer = slice.default(this.__writebuffer)[`${sent}:`]
+      this.__writebuffer = this.__writebuffer.slice(sent)
     } catch (err) {
       this.disconnect(String(err))
     }
