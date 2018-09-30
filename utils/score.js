@@ -36,7 +36,7 @@ module.exports = class {
   }
 
   setDataFromDB (scoreID, rank = undefined) {
-    let row = share.db.prepare('select scores.*, users.username from scores left join users on users.id = scores.userid where scores.id = ?').get([scoreID])
+    let row = db.prepare('select scores.*, users.username from scores left join users on users.id = scores.userid where scores.id = ?').get([scoreID])
     this.setDataFromDict(row, rank)
   }
 
@@ -135,12 +135,12 @@ module.exports = class {
     if ((this.passed === true) && scoreutil.isRankable(this.mods)) {
       let userID = user.getIdFromUsername(this.playerName)
 
-      let row = share.db.prepare('select id from scores where userid = ? and beatmap_md5 = ? and play_mode = ? and score = ?').get([userID, this.fileMd5, this.gameMode, this.score])
+      let row = db.prepare('select id from scores where userid = ? and beatmap_md5 = ? and play_mode = ? and score = ?').get([userID, this.fileMd5, this.gameMode, this.score])
       if (row) {
         this.completed = -1
         return undefined
       }
-      row = share.db.prepare('select id, score from scores where userid = ? and beatmap_md5 = ? and play_mode = ? and completed = 3').get([userID, this.fileMd5, this.gameMode])
+      row = db.prepare('select id, score from scores where userid = ? and beatmap_md5 = ? and play_mode = ? and completed = 3').get([userID, this.fileMd5, this.gameMode])
       if (!row) {
         this.completed = 3
         this.rankedScoreIncrease = this.score
@@ -162,11 +162,11 @@ module.exports = class {
   saveScoreInDB () {
     console.log(this.completed)
     if (this.completed >= 2) {
-      let row = share.db.prepare('INSERT INTO scores (id, beatmap_md5, userid, score, max_combo, full_combo, mods, `300_count`, `100_count`, `50_count`, katus_count, gekis_count, misses_count, time, play_mode, completed, accuracy, pp) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run([this.fileMd5, user.getIdFromUsername(this.playerName), this.score, this.maxCombo, (this.fullCombo) ? 1 : 0, this.mods, this.c300, this.c100, this.c50, this.cKatu, this.cGeki, this.cMiss, this.playDateTime, this.gameMode, this.completed, this.accuracy, this.pp])
+      let row = db.prepare('INSERT INTO scores (id, beatmap_md5, userid, score, max_combo, full_combo, mods, `300_count`, `100_count`, `50_count`, katus_count, gekis_count, misses_count, time, play_mode, completed, accuracy, pp) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run([this.fileMd5, user.getIdFromUsername(this.playerName), this.score, this.maxCombo, (this.fullCombo) ? 1 : 0, this.mods, this.c300, this.c100, this.c50, this.cKatu, this.cGeki, this.cMiss, this.playDateTime, this.gameMode, this.completed, this.accuracy, this.pp])
       this.scoreID = row.lastInsertROWID
 
       if (this.oldPersonalBest !== 0) {
-        share.db.prepare('update scores set completed = 2 where id = ?').run([this.scoreID])
+        db.prepare('update scores set completed = 2 where id = ?').run([this.scoreID])
       }
     }
   }
@@ -196,9 +196,9 @@ module.exports = class {
   }
 }
 
-const share = require('../share')
 const Beatmap = require('./beatmap')
 const user = require('./user')
 const rankedType = require('./rankedType')
 const scoreutil = require('./scoreutil')
 const Pp = require('../pp')
+const db = require('../db')

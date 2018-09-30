@@ -33,7 +33,7 @@ module.exports = class {
   }
 
   setDataFromDB (md5) {
-    let row = share.db.prepare('SELECT * FROM beatmaps WHERE beatmap_md5 = ?').get([md5])
+    let row = db.prepare('SELECT * FROM beatmaps WHERE beatmap_md5 = ?').get([md5])
     console.log(Boolean(row))
     if (row) {
       if ((row.difficulty_taiko === 0) && (row.difficulty_ctb === 0) && (row.difficulty_mania === 0)) {
@@ -50,7 +50,7 @@ module.exports = class {
 
       console.log(row.latest_update)
       console.log((expire > 0) && (Date.now() > (row.latest_update + expire)))
-      if ((expire > 0) && (Date.now() > (row.latest_update + Number(expire)))) {
+      if ((expire > 0) && (Date.now() > (Number(row.latest_update) + Number(expire)))) {
         if (row.ranked_status_freezed === 1) {
           this.setDataFromDict(row)
         }
@@ -194,7 +194,7 @@ module.exports = class {
 
   addBeatmapToDB () {
     let frozen = 0
-    let bdata = share.db.prepare('select id, ranked_status_freezed, ranked from beatmaps where beatmap_md5 = ? or beatmap_id = ?').get([this.fileMD5, this.beatmapID])
+    let bdata = db.prepare('select id, ranked_status_freezed, ranked from beatmaps where beatmap_md5 = ? or beatmap_id = ?').get([this.fileMD5, this.beatmapID])
 
     if (bdata) {
       frozen = bdata.ranked_status_freezed
@@ -202,11 +202,11 @@ module.exports = class {
         this.rankedStatus = bdata.ranked
       }
       consoleColor.debug('Old beatmap data has detected, Deleting...')
-      share.db.prepare('delete from beatmaps where id = ?').run(bdata.id)
+      db.prepare('delete from beatmaps where id = ?').run(bdata.id)
     }
 
     consoleColor.debug('Saving beatmap data in db...')
-    share.db.prepare('insert into beatmaps (`id`, `beatmap_id`, `beatmapset_id`, `beatmap_md5`, `song_name`, `ar`, `od`, `difficulty_std`, `difficulty_taiko`, `difficulty_ctb`, `difficulty_mania`, `max_combo`, `hit_length`, `bpm`, `ranked`, `latest_update`, `ranked_status_freezed`) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run([
+    db.prepare('insert into beatmaps (`id`, `beatmap_id`, `beatmapset_id`, `beatmap_md5`, `song_name`, `ar`, `od`, `difficulty_std`, `difficulty_taiko`, `difficulty_ctb`, `difficulty_mania`, `max_combo`, `hit_length`, `bpm`, `ranked`, `latest_update`, `ranked_status_freezed`) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run([
       this.beatmapID,
       this.beatmapSetID,
       this.fileMD5,
@@ -241,7 +241,7 @@ module.exports = class {
   }
 
   getCachedTillerinoPP () {
-    let data = share.db.prepare('select pp_100, pp_99, pp_98, pp_95 from beatmaps where beatmap_md5 = ?').get([this.fileMD5])
+    let data = db.prepare('select pp_100, pp_99, pp_98, pp_95 from beatmaps where beatmap_md5 = ?').get([this.fileMD5])
 
     if (!data) {
       return [0, 0, 0, 0]
@@ -251,7 +251,7 @@ module.exports = class {
   }
 
   saveCachedTillerinoPP (l) {
-    share.db.prepare('update beatmaps set pp_100 = ?, pp_99 = ? , pp_98 = ?, pp_95 = ? where beatmap_md5 = ?').run([l[0], l[1], l[2], l[3], this.fileMD5])
+    db.prepare('update beatmaps set pp_100 = ?, pp_99 = ? , pp_98 = ?, pp_95 = ? where beatmap_md5 = ?').run([l[0], l[1], l[2], l[3], this.fileMD5])
   }
 
   isRankable () {
@@ -277,9 +277,9 @@ const convertRankedStatus = (approvedStatus) => {
 }
 
 module.exports.incrementPlaycount = (md5, passed) => {
-  share.db.prepare('update beatmaps set playcount = playcount+1 where beatmap_md5 = ?').run([md5])
+  db.prepare('update beatmaps set playcount = playcount+1 where beatmap_md5 = ?').run([md5])
   if (passed) {
-    share.db.prepare('update beatmaps set passcount = passcount+1 where beatmap_md5 = ?').run([md5])
+    db.prepare('update beatmaps set passcount = passcount+1 where beatmap_md5 = ?').run([md5])
   }
 }
 
@@ -287,3 +287,4 @@ const rankedType = require('./rankedType')
 const consoleColor = require('./consoleColor')
 const osuapi = require('./osuapi')
 const share = require('../share')
+const db = require('../db')

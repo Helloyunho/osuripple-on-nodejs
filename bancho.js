@@ -161,7 +161,7 @@ app.route('/')
     res.setHeader('Connection', 'keep-alive')
     res.setHeader('Content-Type', 'text/html; charset=UTF-8')
 
-    res.write(resData)
+    res.send(resData)
     res.end()
   })
 

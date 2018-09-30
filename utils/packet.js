@@ -207,10 +207,22 @@ const readPacketData = (stream, structure = null, hasFirstBytes = true) => {
   return data
 }
 
+const binaryWrite = (structure = undefined) => {
+  if (!structure) {
+    structure = []
+  }
+  let packetData = Buffer.from([])
+  structure.forEach(i => {
+    packetData += packData(i[0], i[1])
+  })
+  return packetData
+}
+
 module.exports = {
   packData: packData,
   buildPacket: buildPacket,
   unpackData: unpackData,
   readPacketID: readPacketID,
   readPacketLength: readPacketLength,
-  readPacketData: readPacketData}
+  readPacketData: readPacketData,
+  binaryWrite: binaryWrite}

@@ -8,7 +8,8 @@ module.exports = (req, res) => {
   })
 
   if (!okArgs) {
-    res.write('error: meme')
+    res.send('error: meme')
+    res.end()
     return undefined
   }
 
@@ -23,11 +24,13 @@ module.exports = (req, res) => {
 
   let userID = utils.user.getIdFromUsername(username)
   if (!userID) {
-    res.write('error: pass')
+    res.send('error: pass')
+    res.end()
     return undefined
   }
   if (!utils.user.checkLoginIsOk(userID, password)) {
-    res.write('error: pass')
+    res.send('error: pass')
+    res.end()
     return undefined
   }
 
@@ -52,7 +55,7 @@ module.exports = (req, res) => {
   let data = ''
   data += bmap.getData(sboard.totalScores, scoreboardVersion)
   data += sboard.getScoresData()
-  res.write(data)
+  res.send(data)
   res.end()
 }
 

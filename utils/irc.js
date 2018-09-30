@@ -192,7 +192,7 @@ class Client {
         this.reply461('PASS')
       } else {
         let tokenHash = md5(encoding.convert(args[0], 'utf-8'))
-        let row = share.db.prepare('SELECT users.username, users.id FROM users LEFT JOIN irc_tokens ON users.id = irc_tokens.id WHERE irc_tokens.token = ? LIMIT 1').get([tokenHash])
+        let row = db.prepare('SELECT users.username, users.id FROM users LEFT JOIN irc_tokens ON users.id = irc_tokens.id WHERE irc_tokens.token = ? LIMIT 1').get([tokenHash])
         if (!row) {
           this.reply('464 :Password incorrect')
           return
@@ -553,3 +553,4 @@ const chat = require('./chat')
 const consoleColor = require('./consoleColor')
 const userutil = require('./user')
 const permission = require('../permission')
+const db = require('../db')

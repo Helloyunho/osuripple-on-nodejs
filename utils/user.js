@@ -1,33 +1,41 @@
-const deasync = require('deasync')
-
 exports.getIdFromUsername = (username) => {
-  let row = share.db.prepare('select id from users where username = ?').get([username])
-  return row.id
+  let row = db.prepare('select id from users where username = ?').get([username])
+  if (row) {
+    return row.id
+  }
 }
 
 exports.getUsernameFromId = (id) => {
-  let row = share.db.prepare('select username from users where id = ?').get([id])
-  return row.username
+  let row = db.prepare('select username from users where id = ?').get([id])
+  if (row) {
+    return row.username
+  }
 }
 
 exports.getEasyUsernameFromId = (id) => {
-  let row = share.db.prepare('select username_easy from users where id = ?').get([id])
-  return row.username_easy
+  let row = db.prepare('select username_easy from users where id = ?').get([id])
+  if (row) {
+    return row.username_easy
+  }
 }
 
 exports.checkLoginIsOk = (id, pass) => {
-  let row = share.db.prepare('select password from users where id = ?').get([id])
-  return row.password === pass
+  let row = db.prepare('select password from users where id = ?').get([id])
+  if (row) {
+    return row.password === pass
+  }
 }
 
 exports.getPermission = (id) => {
-  let row = share.db.prepare('select permission from users where id = ?').get([id])
-  return row.permission
+  let row = db.prepare('select permission from users where id = ?').get([id])
+  if (row) {
+    return row.permission
+  }
 }
 
 exports.getFriends = (id) => {
   let data = []
-  let rows = share.db.prepare('select friendid from friends where userid = ?').all([id])
+  let rows = db.prepare('select friendid from friends where userid = ?').all([id])
   rows.forEach((a) => {
     data.push(a)
   })
@@ -38,19 +46,21 @@ exports.getFriends = (id) => {
 }
 
 exports.getStatus = (id, mode) => {
-  let row = share.db.prepare(`select ranked_score_${mode} as rankedScore, accuracy_${mode} as accuracy, playcount_${mode} as playcount, total_score_${mode} as totalScore, pp_${mode} as pp, game_rank_${mode} as game_rank from user_status where id = ${id}`).get()
+  let row = db.prepare(`select ranked_score_${mode} as rankedScore, accuracy_${mode} as accuracy, playcount_${mode} as playcount, total_score_${mode} as totalScore, pp_${mode} as pp, game_rank_${mode} as game_rank from user_status where id = ${id}`).get()
 
   return row
 }
 
 exports.getGameRank = (id, mode) => {
-  let row = share.db.prepare(`select game_rank_${mode} as game_rank from user_status where id = ${id}`).get()
-  return row.game_rank
+  let row = db.prepare(`select game_rank_${mode} as game_rank from user_status where id = ${id}`).get()
+  if (row) {
+    return row.game_rank
+  }
 }
 
 exports.silence = (id, sec, silenceReason, author = 1) => {
   let silenceEndTime = Date.now() + sec
-  share.db.prepare('update users set silence_time = ?, silence_reason = ? where id = ?').run([silenceEndTime, silenceReason, id])
+  db.prepare('update users set silence_time = ?, silence_reason = ? where id = ?').run([silenceEndTime, silenceReason, id])
 
   if (sec > 0) {
     share.log_file.write(`UserID ${id} has silenced for ${sec} by ${author}`)
@@ -60,23 +70,27 @@ exports.silence = (id, sec, silenceReason, author = 1) => {
 }
 
 exports.getSilenceEnd = (id) => {
-  let row = share.db.prepare('select silence_time from users where id = ?').get([id])
+  let row = db.prepare('select silence_time from users where id = ?').get([id])
 
-  return row.silence_time
+  if (row) {
+    return row.silence_time
+  }
 }
 
 exports.updateLatestActivity = id => {
-  share.db.prepare('update users set latest_activity = ? where id = ?').run([Date.now(), id])
+  db.prepare('update users set latest_activity = ? where id = ?').run([Date.now(), id])
 }
 
 exports.setCountry = (id, country) => {
-  share.db.prepare('update user_status set country = ? where id = ?').run([country, id])
+  db.prepare('update user_status set country = ? where id = ?').run([country, id])
 }
 
 exports.getCountry = (id) => {
-  let row = share.db.prepare('select country from user_status where id = ?').get([id])
+  let row = db.prepare('select country from user_status where id = ?').get([id])
 
-  return row.country
+  if (row) {
+    return row.country
+  }
 }
 
 exports.addFriend = (userID, friendID) => {
@@ -84,27 +98,27 @@ exports.addFriend = (userID, friendID) => {
     return undefined
   }
 
-  let row = share.db.prepare('select id from friends where userid = ? and friendid = ?').get([userID, friendID])
+  let row = db.prepare('select id from friends where userid = ? and friendid = ?').get([userID, friendID])
 
   if ((typeof row.id) !== 'number') {
-    share.db.prepare('insert into friends (userid, friendid) values (?, ?)').run([userID, friendID])
+    db.prepare('insert into friends (userid, friendid) values (?, ?)').run([userID, friendID])
   }
 }
 
 exports.removeFriend = (userID, friendID) => {
-  share.db.prepare('delete from friends whene userid = ? and friendid = ?').run([userID, friendID])
+  db.prepare('delete from friends whene userid = ? and friendid = ?').run([userID, friendID])
 }
 
 exports.restrict = (userID) => {
-  share.db.prepare('update users set permission = permission & ? , banned_time = ?, where id = ?').run([~(2 << 0), Date.now(), userID])
+  db.prepare('update users set permission = permission & ? , banned_time = ?, where id = ?').run([~(2 << 0), Date.now(), userID])
 }
 
 exports.restrict_reason = (userID, reason) => {
-  share.db.prepare('update users set banned_reason = ? where id = ?').run([reason, userID])
+  db.prepare('update users set banned_reason = ? where id = ?').run([reason, userID])
 }
 
 exports.exists = (userID) => {
-  let row = share.db.prepare('select id from users where id = ?').get([userID])
+  let row = db.prepare('select id from users where id = ?').get([userID])
 
   return Boolean(row)
 }
@@ -116,12 +130,12 @@ exports.updateStats = (userID, __score) => {
 
   let mode = __score.gameMode
 
-  share.db.prepare(`update user_status set total_score_${mode}=total_score_${mode}+$s, playcount_${mode}=playcount_${mode}+1 where id = $id`).run({s: __score.score, id: userID})
+  db.prepare(`update user_status set total_score_${mode}=total_score_${mode}+$s, playcount_${mode}=playcount_${mode}+1 where id = $id`).run({s: __score.score, id: userID})
 
   exports.updateLevel(userID, __score.gameMode)
 
   if (__score.passed) {
-    share.db.prepare(`update user_status set ranked_score_${mode}=ranked_score_${mode}+? where id = ?`).run([__score.rankedScoreIncrease, userID])
+    db.prepare(`update user_status set ranked_score_${mode}=ranked_score_${mode}+? where id = ?`).run([__score.rankedScoreIncrease, userID])
 
     exports.updateAccuracy(userID, __score.gameMode)
 
@@ -131,12 +145,12 @@ exports.updateStats = (userID, __score) => {
 
 exports.updatePP = (userID, gameMode) => {
   let newPP = exports.calculatePP(userID, gameMode)
-  share.db.prepare(`update user_status set pp_${gameMode}=? where id = ?`).run([newPP, userID])
+  db.prepare(`update user_status set pp_${gameMode}=? where id = ?`).run([newPP, userID])
 }
 
 exports.calculatePP = (userID, gameMode) => {
   let bestPPScores
-  let rows = share.db.prepare('select pp from scores where userid = ? and play_mode = ? and completed = 3 order by pp desc limit 500').all([userID, gameMode])
+  let rows = db.prepare('select pp from scores where userid = ? and play_mode = ? and completed = 3 order by pp desc limit 500').all([userID, gameMode])
   bestPPScores = rows
 
   let totalPP = 0
@@ -154,7 +168,7 @@ exports.calculatePP = (userID, gameMode) => {
 
 exports.updateAccuracy = (userID, gameMode) => {
   let newAcc = exports.calculateAccuracy(userID, gameMode)
-  share.db.prepare(`update user_status set accuracy_${gameMode} = ? where id = ?`).run([newAcc, userID])
+  db.prepare(`update user_status set accuracy_${gameMode} = ? where id = ?`).run([newAcc, userID])
 }
 
 exports.calculateAccuracy = (userID, gameMode) => {
@@ -167,7 +181,7 @@ exports.calculateAccuracy = (userID, gameMode) => {
   }
 
   let bestAccScores
-  let rows = share.db.prepare(`select accuracy from scores where userid = ? and play_mode = ? and completed = 3 order by ${sortby} desc limit 500`).all([userID, gameMode])
+  let rows = db.prepare(`select accuracy from scores where userid = ? and play_mode = ? and completed = 3 order by ${sortby} desc limit 500`).all([userID, gameMode])
   bestAccScores = rows
 
   let v = 0
@@ -194,7 +208,7 @@ exports.calculateAccuracy = (userID, gameMode) => {
 exports.updateLevel = (userID, gameMode = 0, totalScore = 0) => {
   if (totalScore === 0) {
     totalScore = undefined
-    let row = share.db.prepare(`select total_score_${gameMode} as total_score from user_status where id = ?`).get([userID])
+    let row = db.prepare(`select total_score_${gameMode} as total_score from user_status where id = ?`).get([userID])
     totalScore = row
 
     if ((typeof totalScore) !== 'undefined') {
@@ -204,7 +218,7 @@ exports.updateLevel = (userID, gameMode = 0, totalScore = 0) => {
 
   let level = exports.getLevel(totalScore)
 
-  share.db.prepare(`update user_status set level_${gameMode} = ? where id = ?`).run([level, userID])
+  db.prepare(`update user_status set level_${gameMode} = ? where id = ?`).run([level, userID])
 }
 
 exports.getLevel = (totalScore) => {
@@ -237,4 +251,9 @@ exports.getRequiredScoreForLevel = (level) => {
   }
 }
 
+exports.incrementReplaysWatched = (userID, gameMode) => {
+  db.run(`update user_status set replays_watched_${gameMode} = replays_watched_${gameMode} + 1 where id = ?`, [userID])
+}
+
 const share = require('../share')
+const db = require('../db')

@@ -61,8 +61,7 @@ module.exports = class {
       if (this.mods > -1) {
         params.mods = this.mods
       }
-      console.log(query)
-      let row = share.db.prepare(query).get(params)
+      let row = db.prepare(query).get(params)
       personalBestScore = row
     }
 
@@ -106,12 +105,10 @@ module.exports = class {
     if ((this.mods > -1) && this.mods & modsEnum.AUTOPLAY === 0) {
       params.mods = this.mods
     }
-    console.log(query)
-    let rows = share.db.prepare(query).all(params)
-    topScores = rows
+    let rows = db.prepare(query).all(params)
 
-    if ((typeof topScores) !== 'undefined') {
-      topScores.forEach(topScore => {
+    if (rows !== []) {
+      rows.forEach(topScore => {
         s = new Score(topScore.id, undefined, false)
 
         s.setDataFromDict(topScore)
@@ -151,7 +148,7 @@ module.exports = class {
 
     query += ' limit 1'
     let hasScore
-    let row = share.db.prepare(query).get((this.mods > -1) ? {md5: this.beatmap.fileMD5, userid: this.userID, mode: this.gameMode, mods: this.mods} : {md5: this.beatmap.fileMD5, userid: this.userID, mode: this.gameMode})
+    let row = db.prepare(query).get((this.mods > -1) ? {md5: this.beatmap.fileMD5, userid: this.userID, mode: this.gameMode, mods: this.mods} : {md5: this.beatmap.fileMD5, userid: this.userID, mode: this.gameMode})
     hasScore = row
 
     if ((typeof hasScore) === 'undefined') {
@@ -171,7 +168,7 @@ module.exports = class {
     }
 
     query += ' order by score desc limit 1'
-    row = share.db.prepare(query).get({md5: this.beatmap.fileMD5, userid: this.userID, mode: this.gameMode, mods: this.mods})
+    row = db.prepare(query).get({md5: this.beatmap.fileMD5, userid: this.userID, mode: this.gameMode, mods: this.mods})
 
     if (row) {
       this.personalBestRank = row.rank
@@ -201,3 +198,4 @@ const user = require('./user')
 const rankedType = require('./rankedType')
 const modsEnum = require('./mods')
 const share = require('../share')
+const db = require('../db')

@@ -9,5 +9,6 @@ exports.datatypes = {
   string: 7,
   ffloat: 8,
   bbytes: 9,
-  int_list: 10
+  int_list: 10,
+  rawReplay: 10
 }

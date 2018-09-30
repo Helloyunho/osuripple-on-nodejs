@@ -22,6 +22,7 @@
     "osu-parser": "^0.3.3",
     "pkg": "^4.3.4",
     "python-struct": "^1.0.6",
+    "query-string": "^6.1.0",
     "redis": "^2.8.0",
     "request": "^2.88.0",
     "rijndael-js": "^1.0.0",

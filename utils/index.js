@@ -30,5 +30,7 @@ module.exports = {
   scoreboard: require('./scoreboard'),
   userStatsCache: require('./userStatsCache'),
   personalBestCache: require('./personalBestCache'),
-  leaderboard: require('./leaderboard')
+  leaderboard: require('./leaderboard'),
+  replay: require('./replay'),
+  general: require('./general')
 }

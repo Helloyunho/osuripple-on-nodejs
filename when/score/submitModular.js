@@ -14,7 +14,7 @@ module.exports = (req, res) => {
   console.log(req.body)
 
   if (!okArgs) {
-    res.write('error: meme')
+    res.send('error: meme')
     return undefined
   }
 
@@ -43,16 +43,19 @@ module.exports = (req, res) => {
   let userID = utils.user.getIdFromUsername(username)
 
   if (!userID) {
-    res.write('error: pass')
+    res.send('error: pass')
+    res.end()
     return undefined
   }
   if (!utils.user.checkLoginIsOk(userID, password)) {
-    res.write('error: pass')
+    res.send('error: pass')
+    res.end()
     return undefined
   }
 
   if (scoreData.length < 16) {
-    res.write('error: meme')
+    res.send('error: meme')
+    res.end()
     return undefined
   }
 
@@ -64,6 +67,7 @@ module.exports = (req, res) => {
 
   if (s.completed === -1) {
     utils.consoleColor.warn('Score is duplicated. this is normal right after restarted server.')
+    res.end()
     return undefined
   }
 
@@ -204,11 +208,11 @@ module.exports = (req, res) => {
       utils.consoleColor.debug('Generated output for online ranking screen!')
       utils.consoleColor.debug(msg)
 
-      res.write(msg)
+      res.send(msg)
       res.end()
     }
   } else {
-    res.write('ok')
+    res.send('ok')
     res.end()
   }
   return true

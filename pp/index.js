@@ -1,8 +1,7 @@
 const std = require('ojsama')
 const taiko = require('taiko-pp-calc')
 const ctb = require('ctb-pp-calc')
-const mania = require('wifipiano2')
-const osuparser = require('osu-parser')
+const mania = require('./wifipiano2')
 const fs = require('fs')
 module.exports = class {
   constructor (__beatmap, __score = undefined, acc = 0, mods = 0, tillerino = false) {
@@ -17,12 +16,12 @@ module.exports = class {
 
     this.beatmap = __beatmap
 
-    if ((typeof __score) === 'undefined') {
+    if ((typeof __score) !== 'undefined') {
       this.score = __score
       this.acc = this.score.accuracy * 100
       this.mods = this.score.mods
       this.combo = this.score.maxCombo
-      this.misses = this.scord.cMiss
+      this.misses = this.score.cMiss
       this.gameMode = this.score.gameMode
     } else {
       this.acc = acc
@@ -54,6 +53,7 @@ module.exports = class {
     let tillerinoAcc = [100, 99, 98, 95]
     let ppList = []
     let pp
+    let objects = this.score.c50 + this.score.c100 + this.score.c300 + this.score.cKatu + this.score.cGeki + this.score.cMiss
     if (this.gameMode === utils.gamemodes.STD) {
       parser = new std.parser()
       parser.feed(mapContent)
@@ -63,6 +63,7 @@ module.exports = class {
       this.stars = stars
 
       if (!this.tillerino) {
+        console.log(`${stars}\n\n${this.combo}\n\n${this.misses}\n\n${this.acc}`)
         pp = std.ppv2({
           stars: stars,
           combo: this.combo,
@@ -89,31 +90,30 @@ module.exports = class {
     } else if (this.gameMode === utils.gamemodes.CTB) {
       if (!this.tillerino) {
         pp = new ctb(mapContent, this.beatmap.starsCtb, this.mods, this.combo, this.acc, this.misses)
-        this.pp = pp
+        this.pp = pp.pp
       } else {
         tillerinoAcc.forEach(i => {
-          ppList.push(new ctb(mapContent, this.beatmap.starsCtb, this.mods, this.combo, i, this.misses))
+          ppList.push(new ctb(mapContent, this.beatmap.starsCtb, this.mods, this.combo, i, this.misses).pp)
         })
         this.pp = ppList
       }
     } else if (this.gameMode === utils.gamemodes.TAIKO) {
       if (!this.tillerino) {
         pp = new taiko(mapContent, this.beatmap.starsTaiko, this.mods, this.combo, this.acc, this.misses)
-        this.pp = pp
+        this.pp = pp.pp
       } else {
         tillerinoAcc.forEach(i => {
-          ppList.push(new taiko(mapContent, this.beatmap.starsTaiko, this.mods, this.combo, i, this.misses))
+          ppList.push(new taiko(mapContent, this.beatmap.starsTaiko, this.mods, this.combo, i, this.misses).pp)
         })
         this.pp = ppList
       }
     } else if (this.gameMode === utils.gamemodes.MANIA) {
-      let map = osuparser.parseContent(mapContent)
       let scoreData = {
         starRating: this.beatmap.starsMania,
         overallDifficulty: this.beatmap.OD,
-        objects: map.hitObjects.length,
+        objects: objects,
         mods: this.mods,
-        score: this.score,
+        score: this.score.score,
         accuracy: this.acc
       }
       this.pp = mania.calculate(scoreData)
