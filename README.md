@@ -68,4 +68,4 @@ None :(
 
 ## License
 
-MIT © 2018 Helloyunho
+See [LICENSE](LICENSE).
