@@ -31,15 +31,6 @@ module.exports.userPermission = (a) => {
   if (a.supporter) {
     result |= 4
   }
-  if (a.bat) {
-    result |= 2
-  }
-  if (a.mod) {
-    result |= 6
-  }
-  if (a.peppy) {
-    result |= 8
-  }
   if (a.admin) {
     result |= 16
   }
