@@ -16,11 +16,47 @@ module.exports = class {
     }
   }
 
-  setScores () {
-    const buildQuery = (...params) => {
-      return `${params[0]} ${params[1]} ${params[2]} ${params[3]} ${params[4]} ${params[5]} ${params[6]}`
+  buildQuery (...params) {
+    return `${params[0]} ${params[1]} ${params[2]} ${params[3]} ${params[4]} ${params[5]} ${params[6]}`
+  }
+
+  getPersonalBestID () {
+    if (this.userID === 0) {
+      return undefined
     }
 
+    let select = ''
+    let joins = ''
+    let country = ''
+    let mods = ''
+    let friends = ''
+    let order = ''
+    let limit = ''
+    select = 'select id from scores where userid = $userid and beatmap_md5 = $md5 and play_mode = $mode and completed = 3'
+
+    if (this.mods > -1) {
+      mods = 'and mods = $mods'
+    }
+
+    if (this.friends) {
+      friends = 'and (scores.userid in (select friendid in friends where userid = $userid)) or scores.userid = $userid'
+    }
+
+    order = 'order by score desc'
+
+    let query = this.buildQuery(select, joins, country, mods, friends, order, limit)
+    let params = {userid: this.userID, md5: this.beatmap.fileMD5, mode: this.gameMode}
+    if (this.mods > -1) {
+      params.mods = this.mods
+    }
+    let id = db.prepare(query).get(params)
+    if (!id) {
+      return undefined
+    }
+    return id.id
+  }
+
+  setScores () {
     this.scores = []
     this.scores.push(-1)
 
@@ -37,36 +73,14 @@ module.exports = class {
     let limit = ''
     let query = ''
     let params = {}
-    let personalBestScore
     let s
     let c = 1
     let topScores
 
-    if (this.userID !== 0) {
-      select = `select id from scores where userid = $userid and beatmap_md5 = $md5 and play_mode = $mode and completed = 3`
+    let personalBestScoreID = this.getPersonalBestID()
 
-      if (this.mods > -1) {
-        mods = 'and mods = $mods'
-      }
-
-      if (this.friends) {
-        friends = 'and (scores.userid in (select friendid from friends where userid = $userid) or scores.userid = $userid'
-      }
-
-      order = 'order by score desc'
-      limit = 'limit 1'
-
-      query = buildQuery(select, joins, country, mods, friends, order, limit)
-      params = {userid: this.userID, md5: this.beatmap.fileMD5, mode: this.gameMode}
-      if (this.mods > -1) {
-        params.mods = this.mods
-      }
-      let row = db.prepare(query).get(params)
-      personalBestScore = row
-    }
-
-    if ((typeof personalBestScore) !== 'undefined') {
-      s = new Score(personalBestScore.id)
+    if ((typeof personalBestScoreID) !== 'undefined') {
+      s = new Score(personalBestScoreID)
       this.scores[0] = s
     } else {
       this.scores[0] = -1
@@ -100,7 +114,7 @@ module.exports = class {
     }
     limit = 'limit 50'
 
-    query = buildQuery(select, joins, country, mods, friends, order, limit)
+    query = this.buildQuery(select, joins, country, mods, friends, order, limit)
     params = {beatmap_md5: this.beatmap.fileMD5, play_mode: this.gameMode, userid: this.userID}
     if ((this.mods > -1) && this.mods & modsEnum.AUTOPLAY === 0) {
       params.mods = this.mods
@@ -112,7 +126,7 @@ module.exports = class {
         s = new Score(topScore.id, undefined, false)
 
         s.setDataFromDict(topScore)
-        s.setRank(c)
+        s.rank = c
 
         if (s.playerName === this.username) {
           this.personalBestRank = c
@@ -122,12 +136,12 @@ module.exports = class {
       })
     }
 
-    if (((typeof personalBestScore) !== 'undefined') && this.personalBestRank < 1) {
+    if (((typeof personalBestScoreID) !== 'undefined') && this.personalBestRank < 1) {
       this.personalBestRank = share.personalBestCache.get(this.userID, this.beatmap.fileMD5, this.country, this.friends, this.mods)
     }
 
-    if (((typeof personalBestScore) !== 'undefined') && this.personalBestRank < 1) {
-      this.setPersonalBest()
+    if (((typeof personalBestScoreID) !== 'undefined') && this.personalBestRank < 1) {
+      this.setPersonalBestRank()
     }
 
     if (this.personalBestRank >= 1) {
@@ -135,7 +149,7 @@ module.exports = class {
     }
   }
 
-  setPersonalBest () {
+  setPersonalBestRank () {
     let query = 'select id from scores where beatmap_md5 = $md5 and userid = $userid and play_mode = $mode and completed = 3'
 
     if (this.mods > -1) {
@@ -181,8 +195,8 @@ module.exports = class {
     if (this.scores[0] === -1) {
       data += '\n'
     } else {
-      this.setPersonalBest()
-      this.scores[0].setRank(this.personalBestRank)
+      this.setPersonalBestRank()
+      this.scores[0].rank = this.personalBestRank
       data += this.scores[0].getData()
     }
 

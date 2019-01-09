@@ -11,8 +11,6 @@ module.exports = (req, res) => {
     }
   })
 
-  console.log(req.body)
-
   if (!okArgs) {
     res.send('error: meme')
     return undefined
@@ -96,6 +94,20 @@ module.exports = (req, res) => {
     utils.user.restrict_reason(userID, `Restricted due to change beatmap hack`)
   }
 
+  let oldPersonalBestRank
+  let oldPersonalBest
+  if (s.passed && s.oldPersonalBest > 0) {
+    oldPersonalBestRank = share.personalBestCache.get(userID, s.fileMd5)
+    if (oldPersonalBestRank === 0) {
+      let oldScoreboard = new utils.scoreboard(username, s.gameMode, beatmapInfo, false)
+      oldScoreboard.setPersonalBestRank()
+      oldPersonalBestRank = Math.max(s.oldPersonalBest, oldPersonalBestRank)
+    }
+    oldPersonalBest = new utils.score(s.oldPersonalBest, oldPersonalBestRank)
+  } else {
+    oldPersonalBestRank = 0
+  }
+
   console.log('Saving score...')
   s.saveScoreInDB()
   console.log('Done!')
@@ -129,30 +141,19 @@ module.exports = (req, res) => {
   utils.beatmap.incrementPlaycount(s.fileMd5, s.passed)
 
   if (s.passed) {
-    let oldUserData = share.userStatsCache.get(userID, s.gameMode)
+    let oldUserStats = share.userStatsCache.get(userID, s.gameMode)
     let oldRank = utils.user.getGameRank(userID, s.gameMode)
-
-    let oldPersonalBestRank = share.personalBestCache.get(userID, s.fileMd5)
-    if (oldPersonalBestRank === 0) {
-      let oldScoreboard = new utils.scoreboard(username, s.gameMode, beatmapInfo, false)
-      oldScoreboard.setPersonalBest()
-      oldPersonalBestRank = (oldScoreboard.personalBestRank > 0) ? oldScoreboard.personalBestRank : 0
-    }
 
     utils.consoleColor.debug(`Updating ${username} stats...`)
     console.log(userID)
     utils.user.updateStats(userID, s)
 
-    let newUserData
+    let newUserStats = utils.user.getStatus(userID, s.gameMode)
+    share.userStatsCache.update(userID, s.gameMode, newUserStats)
 
-    if (s.passed) {
-      newUserData = utils.user.getStatus(userID, s.gameMode)
-      share.userStatsCache.update(userID, s.gameMode, newUserData)
-
-      if ((s.completed === 3) && (newUserData.pp !== oldUserData.pp)) {
-        utils.leaderboard.update(userID, newUserData.pp, s.gameMode)
-        utils.leaderboard.updateCountry(userID, newUserData.pp, s.gameMode)
-      }
+    if ((s.completed === 3) && (newUserStats.pp !== oldUserStats.pp)) {
+      utils.leaderboard.update(userID, newUserStats.pp, s.gameMode)
+      utils.leaderboard.updateCountry(userID, newUserStats.pp, s.gameMode)
     }
 
     utils.user.updateLatestActivity(userID)
@@ -164,46 +165,99 @@ module.exports = (req, res) => {
       share.redis.publish('bancho:update_cached_stats', userID)
 
       let newScoreboard = new utils.scoreboard(username, s.gameMode, beatmapInfo, false)
-      newScoreboard.setPersonalBest()
+      newScoreboard.setPersonalBestRank()
+      let personalBestID = newScoreboard.getPersonalBestID()
+      let currentPersonalBest = new utils.score(personalBestID, newScoreboard.personalBestRank)
 
       let rankInfo = utils.leaderboard.getRankInfo(userID, s.gameMode)
 
-      let output = Object()
-      output.beatmapId = beatmapInfo.beatmapID
-      output.beatmapSetId = beatmapInfo.beatmapSetID
-      output.beatmapPlaycount = beatmapInfo.playcount
-      output.beatmapPasscount = beatmapInfo.passcount
-      output.approvedDate = '\n'
-      output.chartId = 'overall'
-      output.chartName = 'Overall Ranking'
-      output['chartEndDate'] = ''
-      output['beatmapRankingBefore'] = oldPersonalBestRank
-      output['beatmapRankingAfter'] = newScoreboard.personalBestRank
-      output['rankedScoreBefore'] = oldUserData['rankedScore']
-      output['rankedScoreAfter'] = newUserData['rankedScore']
-      output['totalScoreBefore'] = oldUserData['totalScore']
-      output['totalScoreAfter'] = newUserData['totalScore']
-      output['playCountBefore'] = newUserData['playcount']
-      output['accuracyBefore'] = Number(oldUserData['accuracy']) / 100
-      output['accuracyAfter'] = Number(newUserData['accuracy']) / 100
-      output['rankBefore'] = oldRank
-      output['rankAfter'] = rankInfo['currentRank']
-      output['toNextRank'] = rankInfo['difference']
-      output['toNextRankUser'] = rankInfo['nextUsername']
-      output['achievements'] = ''
-      output['onlineScoreId'] = s.scoreID
+      let output = []
+      if (req.url === '/web/osu-submit-modular-selector.php') {
+        output.push({
+          beatmapId: beatmapInfo.beatmapID,
+          beatmapSetId: beatmapInfo.beatmapSetID,
+          beatmapPlaycount: beatmapInfo.playcount + 1,
+          beatmapPasscount: beatmapInfo.passcount + (s.completed === 3),
+          approvedDate: ''
+        })
+        let oldScore = s.completed === 3 ? oldPersonalBest : currentPersonalBest
+        let newScore = s.completed === 3 ? currentPersonalBest : s
+        output.push({
+          chartId: 'beatmap',
+          chartUrl: 'IDK',
+          chartName: 'Beatmap Ranking',
+          rankBefore: oldScore.rank || '',
+          rankAfter: newScore.rank,
+          maxComboBefore: oldScore.maxCombo || '0',
+          maxComboAfter: newScore.maxCombo,
+          accuracyBefore: (oldScore.accuracy * 100) || '0',
+          accuracyAfter: (newScore.accuracy * 100),
+          rankedScoreBefore: oldScore.score || '0',
+          rankedScoreAfter: newScore.score,
+          ppBefore: oldScore.pp || '0',
+          ppAfter: newScore.pp,
+          onlineScoreId: newScore.scoreID
+        })
+        output.push({
+          chartId: 'overall',
+          chartUrl: 'IDK',
+          chartName: 'Overall Ranking',
+          rankBefore: oldRank || '0',
+          rankAfter: rankInfo.currentRank || '0',
+          rankedScoreBefore: oldScore.rankedScore || '0',
+          rankedScoreAfter: newScore.rankedScore || '0',
+          totalScoreBefore: oldUserStats.totalScore || '0',
+          totalScoreAfter: newUserStats.totalScore || '0',
+          maxComboBefore: '0',
+          maxComboAfter: '0',
+          accuracyBefore: (oldUserStats.accuracy) || '0',
+          accuracyAfter: (newUserStats.accuracy) || '0',
+          ppBefore: oldUserStats.pp || '0',
+          ppAfter: newUserStats.pp || '0',
+          'achievements-new': '',
+          onlineScoreId: s.scoreID
+        })
+      } else {
+        output.push({
+          beatmapId: beatmapInfo.beatmapID,
+          beatmapSetId: beatmapInfo.beatmapSetID,
+          beatmapPlaycount: beatmapInfo.playcount,
+          beatmapPasscount: beatmapInfo.passcount,
+          approvedDate: ''
+        })
+        output.push({
+          chartId: 'overall',
+          chartName: 'Overall Ranking',
+          chartEndDate: '',
+          beatmapRankingBefore: oldPersonalBestRank,
+          beatmapRankingAfter: newScoreboard.personalBestRank,
+          rankedScoreBefore: oldUserStats['rankedScore'],
+          rankedScoreAfter: newUserStats['rankedScore'],
+          totalScoreBefore: oldUserStats['totalScore'],
+          totalScoreAfter: newUserStats['totalScore'],
+          playCountBefore: newUserStats['playcount'],
+          accuracyBefore: Number(oldUserStats['accuracy']) / 100,
+          accuracyAfter: Number(newUserStats['accuracy']) / 100,
+          rankBefore: oldRank,
+          rankAfter: rankInfo['currentRank'],
+          toNextRank: rankInfo['difference'],
+          toNextRankUser: rankInfo['nextUsername'],
+          achievements: '',
+          'achievements-new': '',
+          onlineScoreId: s.scoreID
+        })
+      }
 
       let msg = ''
-      Object.keys(output).forEach(line => {
-        msg += `${line}:${output[line]}`
-        if (output[line] !== '\n') {
-          if ((output.length - 1) !== Object.keys(output).indexOf(line)) {
-            msg += '|'
-          } else {
-            msg += '\n'
-          }
-        }
+      output = output.map(x => {
+        let a = []
+        Object.keys(x).forEach(y => {
+          a.push(`${y}:${x[y]}`)
+        })
+        return a.join('|')
       })
+      console.log(output)
+      msg = output.join('\n')
 
       utils.consoleColor.debug('Generated output for online ranking screen!')
       utils.consoleColor.debug(msg)

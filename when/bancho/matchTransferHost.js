@@ -1,4 +1,5 @@
 module.exports = (userToken, packetData) => {
+  packetData = utils.clientPackets.transferHost(packetData)
   let userID = userToken.userid
 
   let matchID = userToken.matchID
@@ -20,3 +21,4 @@ module.exports = (userToken, packetData) => {
 }
 
 const share = require('../../share')
+const utils = require('../../utils')

@@ -17,10 +17,10 @@ module.exports.getRank = (gameMode, __mods, acc, c300, c100, c50, cmiss) => {
     if (((c300 / total) > 0.9) && ((c50 / total) < 0.1) && (cmiss === 0)) {
       return s()
     }
-    if ((((c300 / total) > 0.8) && (cmiss == 0)) || ((c300 / total) > 0.9)) {
+    if ((((c300 / total) > 0.8) && (cmiss === 0)) || ((c300 / total) > 0.9)) {
       return 'A'
     }
-    if ((((c300 / total) > 0.7) && (cmiss == 0)) || ((c300 / total) > 0.8)) {
+    if ((((c300 / total) > 0.7) && (cmiss === 0)) || ((c300 / total) > 0.8)) {
       return 'B'
     }
     if ((c300 / total) > 0.60) {

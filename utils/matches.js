@@ -15,12 +15,13 @@ module.exports = class {
 
   disposeMatch (matchID) {
     if (!(matchID in this.matches)) {
+      console.log(`Match ${matchID} want's to dispose, but not found.`)
       return null
     }
 
     let _match = this.matches[matchID]
     _match.slots.forEach(i => {
-      let _token = share.tokens.getTokenFromUserID(i.userid, true)
+      let _token = share.tokens.getTokenFromUserid(i.userid, true)
       if (!_token) {
         return
       }

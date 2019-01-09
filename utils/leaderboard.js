@@ -67,7 +67,7 @@ module.exports.getRankInfo = (userID, gameMode) => {
 
 module.exports.update = (userID, newScore, gameMode) => {
   let upermission = user.getPermission(userID)
-  if (upermission & permission.restricted > 0) {
+  if ((upermission & permission.restricted) > 0) {
     consoleColor.debug(`Leaderboard update for user ${userID} skipped (restricted)`)
   } else {
     consoleColor.debug('Updating leaderboard....')
@@ -77,7 +77,7 @@ module.exports.update = (userID, newScore, gameMode) => {
 
 module.exports.updateCountry = (userID, newScore, gameMode) => {
   let upermission = user.getPermission(userID)
-  if (upermission & permission.restricted > 0) {
+  if ((upermission & permission.restricted) > 0) {
     consoleColor.debug(`Country leaderboard update for user ${userID} skipped (restricted)`)
   } else {
     let country = user.getCountry(userID)

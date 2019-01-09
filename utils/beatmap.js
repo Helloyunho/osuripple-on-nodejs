@@ -277,10 +277,7 @@ const convertRankedStatus = (approvedStatus) => {
 }
 
 module.exports.incrementPlaycount = (md5, passed) => {
-  db.prepare('update beatmaps set playcount = playcount+1 where beatmap_md5 = ?').run([md5])
-  if (passed) {
-    db.prepare('update beatmaps set passcount = passcount+1 where beatmap_md5 = ?').run([md5])
-  }
+  db.prepare(`update beatmaps set playcount = playcount+1${passed ? ', passcount = passcount+1' : ''} where beatmap_md5 = ?`).run([md5])
 }
 
 const rankedType = require('./rankedType')

@@ -142,13 +142,22 @@ module.exports = class {
     }
   }
 
-  setHost (newHost) {
-    let slotID = this.getUserSlotID(newHost)
+  setHost (userid, slot = false) {
+    let slotID
+    let userID
+    if (slot) {
+      slotID = userid
+      userID = share.tokens.tokens[this.slots[slotID].user].userid
+    } else {
+      userID = userid
+      slotID = this.getUserSlotID(userID)
+    }
     if ((typeof slotID) !== 'number' || !(this.slots[slotID].user in share.tokens.tokens)) {
+      consoleColor.debug(`User ${userID} try to get host, but slot is not found`)
       return false
     }
     let token = share.tokens.tokens[this.slots[slotID].user]
-    this.hostUserID = newHost
+    this.hostUserID = userID
     token.addpackets(packets.matchTransferHost())
     this.sendUpdates()
     return true
@@ -384,7 +393,7 @@ module.exports = class {
 
     rangeList.forEach(i => {
       if (this.slots[i].user === user.token) {
-        this.setSlot(i, matchtypes.Statuses.FREE, 0, undefined, 0)
+        this.setSlot(i, matchtypes.Statuses.FREE, 0, user.token, 0)
       }
     })
 
@@ -481,12 +490,9 @@ module.exports = class {
     this.sendUpdates()
   }
 
-  transferHost (slotid) {
-    if (!this.slots[slotid].user || !(this.slots[slotid].user in share.tokens.tokens)) {
-      return null
-    }
-
-    this.setHost(share.tokens.tokens[this.slots[slotid].user].userid)
+  transferHost (slotID) {
+    console.log(slotID)
+    this.setHost(slotID, true)
   }
 
   playerFailed (userid) {

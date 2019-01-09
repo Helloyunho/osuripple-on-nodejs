@@ -118,6 +118,16 @@ app.route('/web/osu-submit-modular.php').post(upload.any(), (req, res) => {
   }
 })
 
+app.route('/web/osu-submit-modular-selector.php').post(upload.any(), (req, res) => {
+  let ip = req.get('X-Real-IP')
+  utils.consoleColor.log(`${ip} is connecting with url: ${req.url}`)
+  let ok = when.submitModular(req, res)
+  if (!ok) {
+    res.sendStatus(408)
+    res.end()
+  }
+})
+
 app.route('/web/osu-getreplay.php').get((req, res) => {
   let okArgs = true
   let args = ['c', 'u', 'h']

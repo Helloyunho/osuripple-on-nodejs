@@ -100,7 +100,7 @@ exports.addFriend = (userID, friendID) => {
 
   let row = db.prepare('select id from friends where userid = ? and friendid = ?').get([userID, friendID])
 
-  if ((typeof row.id) !== 'number') {
+  if (!row) {
     db.prepare('insert into friends (userid, friendid) values (?, ?)').run([userID, friendID])
   }
 }

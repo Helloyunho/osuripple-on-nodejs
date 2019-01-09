@@ -25,7 +25,7 @@ module.exports = (userToken, packetData) => {
     }
 
     let slotID = match.getUserSlotID(userID)
-    if (slotID) {
+    if (typeof slotID === 'number') {
       match.setSlotMods(slotID, packetData.mods)
     }
   } else {

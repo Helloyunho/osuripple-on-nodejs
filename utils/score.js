@@ -103,10 +103,6 @@ module.exports = class {
     }
   }
 
-  setRank (rank) {
-    this.rank = rank
-  }
-
   setDataFromScoreData (scoreData) {
     if (scoreData.length >= 16) {
       this.fileMd5 = scoreData[0]
@@ -146,15 +142,9 @@ module.exports = class {
         this.rankedScoreIncrease = this.score
         this.oldPersonalBest = 0
       } else {
-        if (this.score > row.score) {
-          this.completed = 3
-          this.rankedScoreIncrease = this.score - row.scoreget
-          this.oldPersonalBest = row.id
-        } else {
-          this.completed = 2
-          this.rankedScoreIncrease = 0
-          this.oldPersonalBest = 0
-        }
+        this.rankedScoreIncrease = this.score - row.score
+        this.oldPersonalBest = row.id
+        this.completed = (this.score > row.score) ? 3 : 2
       }
     }
   }
@@ -165,8 +155,8 @@ module.exports = class {
       let row = db.prepare('INSERT INTO scores (id, beatmap_md5, userid, score, max_combo, full_combo, mods, `300_count`, `100_count`, `50_count`, katus_count, gekis_count, misses_count, time, play_mode, completed, accuracy, pp) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run([this.fileMd5, user.getIdFromUsername(this.playerName), this.score, this.maxCombo, (this.fullCombo) ? 1 : 0, this.mods, this.c300, this.c100, this.c50, this.cKatu, this.cGeki, this.cMiss, this.playDateTime, this.gameMode, this.completed, this.accuracy, this.pp])
       this.scoreID = row.lastInsertROWID
 
-      if (this.oldPersonalBest !== 0) {
-        db.prepare('update scores set completed = 2 where id = ?').run([this.scoreID])
+      if (this.oldPersonalBest !== 0 && this.completed === 3) {
+        db.prepare('update scores set completed = 2 where id = ?').run([this.oldPersonalBest])
       }
     }
   }
