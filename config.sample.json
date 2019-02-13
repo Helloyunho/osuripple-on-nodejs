@@ -16,5 +16,11 @@
   },
   "redis": {
     "this part is same as the node-redis's createClient" : "https://github.com/NodeRedis/node_redis#options-object-properties"
+  },
+  "sentry-bancho": {
+    "this part is same as the sentry setting" : "https://docs.sentry.io/error-reporting/quickstart/?platform=node"
+  },
+  "sentry-site": {
+    "this part is same as the sentry setting" : "https://docs.sentry.io/error-reporting/quickstart/?platform=node"
   }
 }

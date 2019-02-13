@@ -12,6 +12,9 @@ const deasync = require('deasync')
 app.use(compression())
 
 const request = require('request')
+const config = JSON.parse(fs.readFileSync('config.json'))
+const Sentry = require('@sentry/node')
+Sentry.init(config['sentry-site'])
 app.set('port', 5002)
 
 server.listen(app.get('port'), () => {

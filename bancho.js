@@ -4,12 +4,16 @@ let app = express()
 const server = http.createServer(app)
 const bodyParser = require('body-parser')
 const compression = require('compression')
+const fs = require('fs')
 app.use(compression())
 const rawBodySaver = (req, res, buf, encoding) => {
   if (buf && buf.length) {
     req.rawBody = buf.toString(encoding || 'utf8')
   }
 }
+const config = JSON.parse(fs.readFileSync('config.json'))
+const Sentry = require('@sentry/node')
+Sentry.init(config['sentry-bancho'])
 
 app.use(bodyParser.raw({verify: rawBodySaver, type: () => { return true }}))
 app.set('port', 5001)

@@ -46,6 +46,11 @@ Change your hosts file to like this:
 osu.ppy.sh 127.0.0.1 # Or your osu server IP
 c.ppy.sh 127.0.0.1 # Or your osu server IP
 c1.ppy.sh 127.0.0.1 # Or your osu server IP
+c2.ppy.sh 127.0.0.1 # Or your osu server IP
+c3.ppy.sh 127.0.0.1 # Or your osu server IP
+c4.ppy.sh 127.0.0.1 # Or your osu server IP
+c5.ppy.sh 127.0.0.1 # Or your osu server IP
+c6.ppy.sh 127.0.0.1 # Or your osu server IP
 ```
 
 And install the certificate that you just generated(not the .key file!), [I think this article is helpful](https://community.spiceworks.com/how_to/1839-installing-self-signed-ca-certificate-in-windows)

@@ -141,7 +141,7 @@ module.exports = (req, res) => {
   utils.beatmap.incrementPlaycount(s.fileMd5, s.passed)
 
   if (s.passed) {
-    let oldUserStats = share.userStatsCache.get(userID, s.gameMode)
+    let oldUserStats = share.userStatsCache.get(userID, s.gameMode) || {}
     let oldRank = utils.user.getGameRank(userID, s.gameMode)
 
     utils.consoleColor.debug(`Updating ${username} stats...`)
